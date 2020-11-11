@@ -1,7 +1,7 @@
-function filterGoods(goods, property, value) {
-  return goods.filter((good) => good[property] === value);
+function task1(inputGoods, property, value) {
+  return inputGoods.filter((good) => good[property] === value);
 }
 
 module.exports = {
-  filterGoods,
+  task1,
 };

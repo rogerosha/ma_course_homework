@@ -1,10 +1,10 @@
-const goodsList = require('../../goods.json');
+const goods = require('../../goods.json');
 
-function findMostExpensiveGood(goods) {
+function task2(inputGoods) {
   let maxPrice = 0;
   let resultGood = null;
 
-  goods.forEach((good) => {
+  inputGoods.forEach((good) => {
     const currentMaxPrice = (good.quantity || 0) * +(good.priceForPair || good.price).split('$')[1];
 
     if (currentMaxPrice > maxPrice) {
@@ -17,5 +17,5 @@ function findMostExpensiveGood(goods) {
 }
 
 module.exports = {
-  task2: findMostExpensiveGood(goodsList),
+  task2: task2(goods),
 };

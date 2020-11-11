@@ -1,5 +1,5 @@
-function remapGoods(goods) {
-  return goods.map((good) => {
+function task3(inputGoods) {
+  return inputGoods.map((good) => {
     return {
       type: good.type || '',
       color: good.color || '',
@@ -10,5 +10,5 @@ function remapGoods(goods) {
 }
 
 module.exports = {
-  remapGoods,
+  task3,
 };
