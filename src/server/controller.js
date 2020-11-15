@@ -15,23 +15,23 @@ function home(request, response) {
 
 function task1(response, queryParams) {
   goodsArr = firstTask(goods, queryParams.field, queryParams.value);
-  response.write('task1 result = ');
+  response.write('task1 = ');
   response.end(JSON.stringify(goodsArr));
 }
 
 function task2(response) {
-  response.write('tak2 result = ');
+  response.write('task2 = ');
   response.end(JSON.stringify(secondTask));
 }
 
 function task3(response) {
-  response.write('task3 result = ');
+  response.write('task3 = ');
   response.end(JSON.stringify(thirdTask(goods)));
 }
 
-function comment(data, response) {
+function newFile(data, response) {
   fs.writeFileSync(pathToFile, JSON.stringify(data, null, 1));
-  response.write('Post result = ');
+  response.write('newFile = ');
   response.end(JSON.stringify(data));
 }
 
@@ -40,5 +40,5 @@ module.exports = {
   task1,
   task2,
   task3,
-  comment,
+  newFile,
 };
