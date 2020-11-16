@@ -14,6 +14,8 @@ function notFound(res) {
 module.exports = (request, response) => {
   const { url, method, queryParams, body: data } = request;
 
+  response.setHeader('Content-Type', 'application/json');
+
   if (method === 'GET' && url === '/') return home(request, response);
 
   if (method === 'GET' && url.startsWith('/task1?')) return filterGoods(response, queryParams);
