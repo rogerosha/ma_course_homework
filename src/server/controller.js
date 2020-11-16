@@ -13,7 +13,11 @@ function home(request, response) {
 }
 
 function task1(response, queryParams) {
-  goodsArr = firstTask(goods, queryParams.field, queryParams.value);
+  if (queryParams.field === 'quantity') {
+    goodsArr = firstTask(goods, queryParams.field, +queryParams.value);
+  } else {
+    goodsArr = firstTask(goods, queryParams.field, queryParams.value);
+  }
   response.end(JSON.stringify(goodsArr));
 }
 
