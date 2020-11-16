@@ -3,7 +3,7 @@ const {
   task1: filterGoods,
   task2: findMostExpensiveGoods,
   task3: remapGoods,
-  comment,
+  newFile,
 } = require('./controller.js');
 
 function notFound(res) {
@@ -24,6 +24,6 @@ module.exports = (request, response) => {
 
   if (method === 'GET' && url === '/task3') return remapGoods(response);
 
-  if (method === 'POST' && url === '/comment') return comment(data, response);
+  if (method === 'POST' && url === '/newFile') return newFile(data, response);
   return notFound(response);
 };
