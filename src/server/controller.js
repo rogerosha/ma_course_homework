@@ -42,7 +42,6 @@ function discount(response) {
 function newFile(inf, response) {
   if (
     Array.isArray(inf) ||
-    inf.length < 1 ||
     inf.some((param) => param.type || param.color || param.price || param.priceForPair)
   )
     return incorrectParameters(response);
