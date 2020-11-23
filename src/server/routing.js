@@ -1,4 +1,5 @@
 const {
+  good,
   home,
   task1: filterGoods,
   task2: findMostExpensiveGoods,
@@ -11,11 +12,19 @@ function notFound(res) {
   res.end('404 page not found');
 }
 
+function incorrectParameters(res) {
+  res.statusCode = 406;
+  res.end('406 incorrect parameters');
+}
+
 module.exports = (request, response) => {
   const { url, method, queryParams, body: data } = request;
 
   response.setHeader('Content-Type', 'application/json');
-
+  if (method === 'GET' && url.startsWith('/good?'))
+    return queryParams.property || queryParams.value;
+  incorrectParameters(response);
+  good(response, queryParams);
   if (method === 'GET' && url === '/') return home(request, response);
 
   if (method === 'GET' && url.startsWith('/task1?')) return filterGoods(response, queryParams);
