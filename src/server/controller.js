@@ -4,13 +4,9 @@ const path = require('path');
 const pathToFile = path.resolve(__dirname, '../../', 'goods.json');
 
 const goods = require('../../goods.json');
-const {
-  task1: firstTask,
-  task2: secondTask,
-  task3: thirdTask,
-  discount: outputDiscount,
-} = require('../task');
-const incorrectParameters = require('./routing.js');
+const { task1: firstTask, task2: secondTask, task3: thirdTask } = require('../task');
+const { notFound } = require('./routing.js');
+const { generateValidDiscountPromise } = require('../discount/discount.js');
 
 let goodsArr = [];
 
@@ -35,26 +31,45 @@ function task3(response) {
   response.end(JSON.stringify(thirdTask(goods)));
 }
 
-function discount(response) {
-  response.end(JSON.stringify(outputDiscount(response)));
-}
-
-function newFile(inf, response) {
+function newFile(data, response) {
   if (
-    Array.isArray(inf) ||
-    inf.some((param) => param.type || param.color || param.price || param.priceForPair)
+    Array.isArray(data) ||
+    data.some((param) => param.type || param.color || param.price || param.priceForPair)
   )
-    return incorrectParameters(response);
-  fs.writeFileSync(pathToFile, JSON.stringify(inf, null, 1));
-  response.end(JSON.stringify(inf));
+    return notFound(response);
+  fs.writeFileSync(pathToFile, JSON.stringify(data, null, 1));
+  response.end(JSON.stringify(data));
   return response.end();
 }
+
+async function addDiscount(response) {
+  const productsWithDiscount = await Promise.all(
+    goods.map(async (valueIs) => {
+      let discount = await generateValidDiscountPromise();
+
+      if (valueIs.type === 'hat') {
+        discount += await generateValidDiscountPromise();
+      }
+
+      if (valueIs.type === 'hat' && valueIs.color === 'red') {
+        discount += await generateValidDiscountPromise();
+      }
+
+      valueIs.discount = discount;
+
+      return valueIs;
+    }),
+  );
+  response.end(productsWithDiscount);
+}
+
+addDiscount().catch();
 
 module.exports = {
   home,
   task1,
   task2,
   task3,
-  discount,
   newFile,
+  addDiscount,
 };
