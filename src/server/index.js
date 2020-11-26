@@ -1,5 +1,3 @@
-require('dotenv').config();
-
 const http = require('http');
 const requestHandler = require('./requestHandler');
 
@@ -11,6 +9,20 @@ function start() {
   );
 }
 
+function stop(callback) {
+  server.close((err) => {
+    if (err) {
+      console.error(err, 'Failed to close server!');
+      callback();
+      return;
+    }
+
+    console.log('Server has been stopped.');
+    callback();
+  });
+}
+
 module.exports = {
   start,
+  stop,
 };
