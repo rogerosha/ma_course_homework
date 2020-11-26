@@ -1,9 +1,9 @@
 const {
-  home,
   task1: filterGoods,
   task2: findMostExpensiveGoods,
   task3: remapGoods,
   newFile,
+  addDiscount,
 } = require('./controller.js');
 
 function notFound(res) {
@@ -15,14 +15,15 @@ module.exports = (request, response) => {
   const { url, method, queryParams, body: data } = request;
 
   response.setHeader('Content-Type', 'application/json');
-
-  if (method === 'GET' && url === '/') return home(request, response);
-
-  if (method === 'GET' && url.startsWith('/task1?')) return filterGoods(response, queryParams);
+  if (method === 'GET' && url.startsWith('/task1?')) {
+    return filterGoods(response, queryParams);
+  }
 
   if (method === 'GET' && url === '/task2') return findMostExpensiveGoods(response);
 
   if (method === 'GET' && url === '/task3') return remapGoods(response);
+
+  if (method === 'GET' && url === '/products/discounts') return addDiscount(response);
 
   if (method === 'POST' && url === '/newFile') return newFile(data, response);
   return notFound(response);
