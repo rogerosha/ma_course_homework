@@ -60,10 +60,8 @@ async function addDiscount(response) {
       return valueIs;
     }),
   );
-  response.end(productsWithDiscount);
+  response.end(JSON.stringify(productsWithDiscount));
 }
-
-addDiscount().catch();
 
 module.exports = {
   home,
