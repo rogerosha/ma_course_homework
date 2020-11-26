@@ -1,5 +1,7 @@
+const { myMap } = require('../discount/myMap');
+
 function task3(inputGoods) {
-  return inputGoods.myMap((good) => {
+  return myMap(inputGoods, (good) => {
     return {
       type: good.type || '',
       color: good.color || '',
