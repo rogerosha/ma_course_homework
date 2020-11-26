@@ -37,18 +37,7 @@ function generateValidDiscountPromise() {
   });
 }
 
-function main() {
-  const logValidDiscount = (validDiscount) => {
-    console.log(validDiscount);
-  };
-
-  generateValidDiscount(logValidDiscount);
-}
-
-main();
-
 module.exports = {
   generateDiscount,
   generateValidDiscountPromise,
-  main,
 };
