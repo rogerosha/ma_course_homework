@@ -5,7 +5,7 @@ const pathToFile = path.resolve(__dirname, '../../', 'goods.json');
 
 const goods = require('../../goods.json');
 const { task1: firstTask, task2: secondTask, task3: thirdTask } = require('../task');
-const { notFound } = require('./routing.js');
+const { notFound } = require('./router.js');
 const { generateValidDiscountPromise } = require('../discount/discount.js');
 
 let goodsArr = [];

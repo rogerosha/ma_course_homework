@@ -1,6 +1,6 @@
 const { parse: parseQuery } = require('querystring');
 const { URL } = require('url');
-const router = require('./routing.js');
+const router = require('./router.js');
 
 module.exports = async (request, response) => {
   try {
