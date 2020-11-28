@@ -10,10 +10,6 @@ const { generateValidDiscountPromise } = require('../discount/discount.js');
 
 let goodsArr = [];
 
-function home(request, response) {
-  response.end();
-}
-
 function task1(response, queryParams) {
   if (queryParams.field === 'quantity') {
     goodsArr = firstTask(goods, queryParams.field, +queryParams.value);
@@ -64,7 +60,6 @@ async function addDiscount(response) {
 }
 
 module.exports = {
-  home,
   task1,
   task2,
   task3,
