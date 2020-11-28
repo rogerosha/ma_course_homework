@@ -1,12 +1,20 @@
 const { parse: parseQuery } = require('querystring');
 const { URL } = require('url');
 const router = require('./router.js');
+const { handleStreamRoutes } = require('./router.js');
 
 module.exports = async (request, response) => {
   try {
     const { url } = request;
     const parsedUrl = new URL(url, process.env.ORIGIN);
     const queryParams = parseQuery(parsedUrl.search.substr(1));
+
+    if (request.headers['content-type'] === 'application/gzip') {
+      handleStreamRoutes(request, response).catch((err) =>
+        console.error('CSV handler failed', err),
+      );
+      return;
+    }
 
     let body = [];
 
