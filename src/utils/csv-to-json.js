@@ -1,9 +1,9 @@
-const { Transform } = require('stream');
+const { Writable } = require('stream');
 
 function createCsvToJson() {
-  const transform = (chunk, encoding, callback) => {
+  const writable = (chunk, encoding, callback) => {
     console.log(chunk.toString());
-    callback(null, 'JSON string\n');
+    callback.write(null, 'JSON string\n');
   };
 
   const flush = (callback) => {
@@ -11,7 +11,7 @@ function createCsvToJson() {
     callback(null, '\nFinish!');
   };
 
-  return new Transform({ transform, flush });
+  return new Writable({ writable, flush });
 }
 
 module.exports = {
