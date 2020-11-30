@@ -6,8 +6,8 @@ const { promisify } = require('util');
 
 const { nanoid } = require('nanoid');
 
-const { createCsvToJson } = require('../upload/csv-to-json');
-const { createJsonOptimizer } = require('../upload/optimize-json');
+const { createCsvToJson } = require('../utils/csv-to-json');
+const { createJsonOptimizer } = require('../utils/optimize-json');
 const tasks = require('../task');
 
 const goodsList = require('../../goods.json');
