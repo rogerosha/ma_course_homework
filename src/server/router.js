@@ -18,7 +18,7 @@ function notFound(res) {
 
 function makeEndResponse(response) {
   response.statusCode = 200;
-  console.warn('Cannot end response. Response is finished.');
+  response.end('Everything is okay');
 }
 
 async function handleStreamRoutes(request, response) {
@@ -92,22 +92,20 @@ async function handleRoutes(request, response) {
     return;
   }
 
-  if (method === 'POST' && urlPath.dir === '/upload/optimize') {
+  if (method === 'PUT' && urlPath.dir === '/upload/optimize') {
     const fileName = urlPath.base;
-
-    const { files: uploadFiles } = await getUploadFileList();
-    if (!uploadFiles.includes(fileName)) {
-      console.error(`File not found: ${fileName}`);
-      endResponse({ status: 'error', message: 'File not found' }, 404);
+    try {
+      await getUploadFileList(request);
+    } catch (err) {
+      response.setHeader('Content-Type', 'application/json');
+      response.end(JSON.stringify({ status: 500 }));
       return;
     }
-
     optimizeJson(fileName).catch((err) => {
-      console.error('Failed start optimization process', err);
+      console.error('Something goes wrong', err);
       endResponse({ status: 'error' }, 500);
     });
-
-    endResponse({ status: 'processing' }, 202);
+    endResponse({ status: 'okay' }, 202);
     return;
   }
 
