@@ -3,7 +3,7 @@ const path = require('path');
 const { pipeline } = require('stream');
 const { createGunzip } = require('zlib');
 const { promisify } = require('util');
-
+const byline = require('byline');
 const { nanoid } = require('nanoid');
 
 const { createCsvToJson } = require('../utils/csv-to-json');
@@ -43,22 +43,24 @@ function switchStore() {
 }
 
 async function uploadCsv(inputStream) {
-  const uploadDir = process.env.UPLOAD_DIR;
-
+  const uploadDir = `${process.cwd()}/${process.env.UPLOAD_DIR}`;
+  if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir);
+  }
   const gunzip = createGunzip();
 
   const timestamp = Date.now();
-  const filePath = `${uploadDir}${timestamp}-${nanoid()}.json`;
+  const filePath = `${uploadDir}/${timestamp}-${nanoid()}.json`;
   const outputStream = fs.createWriteStream(filePath);
   const csvToJson = createCsvToJson();
 
   try {
-    await promisifiedPipeline(inputStream, gunzip, csvToJson, outputStream);
+    await promisifiedPipeline(inputStream, gunzip, byline, csvToJson, outputStream);
   } catch (err) {
     console.error('CSV pipeline failed', err);
 
     try {
-      await fs.promises.rm(filePath);
+      await fs.unlinkSync(filePath);
     } catch (rmErr) {
       console.error(`Unable to remove JSON ${filePath}`, rmErr);
       throw new Error('Unable to remove JSON');

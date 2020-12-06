@@ -15,6 +15,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "byline": "^5.0.0",
     "dotenv": "^8.2.0",
     "nanoid": "^3.1.18"
   },

@@ -28,7 +28,7 @@ function createCsvToJson() {
   let goodFragment;
 
   const transform = (chunk, encoding, callback) => {
-    const newRow = chunk.toString().split('\n');
+    const newRow = chunk.toString().split(',');
     let output = '';
 
     if (!csvKeys) {

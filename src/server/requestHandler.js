@@ -1,7 +1,6 @@
 const { parse: parseQuery } = require('querystring');
 const { URL } = require('url');
-const router = require('./router.js');
-const { handleStreamRoutes } = require('./router.js');
+const { handleStreamRoutes, handleRoutes } = require('./router.js');
 
 module.exports = async (request, response) => {
   try {
@@ -28,7 +27,7 @@ module.exports = async (request, response) => {
       .on('end', () => {
         body = Buffer.concat(body).toString();
 
-        router(
+        handleRoutes(
           {
             ...request,
             body: body ? JSON.parse(body) : {},

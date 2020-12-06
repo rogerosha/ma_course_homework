@@ -16,15 +16,13 @@ function notFound(res) {
   res.end('404 page not found');
 }
 
-function makeEndResponse(response) {
+function makeEndResponse(response, message) {
   response.statusCode = 200;
-  response.end('Everything is okay');
+  response.end(JSON.stringify(message));
 }
 
 async function handleStreamRoutes(request, response) {
-  const endResponse = makeEndResponse(response);
   const { url, method } = request;
-
   response.setHeader('Content-Type', 'application/json');
 
   if (method === 'PUT' && url === '/upload/csv') {
@@ -37,7 +35,7 @@ async function handleStreamRoutes(request, response) {
       response.end('500 server error');
       return;
     }
-    endResponse({ status: 'ok' });
+    makeEndResponse(response, { status: 'ok' });
     return;
   }
   notFound(response);
