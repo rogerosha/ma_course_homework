@@ -3,8 +3,8 @@ const path = require('path');
 const { pipeline } = require('stream');
 const { createGunzip } = require('zlib');
 const { promisify } = require('util');
-const byline = require('byline');
 const { nanoid } = require('nanoid');
+const es = require('event-stream');
 
 const { createCsvToJson } = require('../utils/csv-to-json');
 const { createJsonOptimizer } = require('../utils/optimize-json');
@@ -43,7 +43,7 @@ function switchStore() {
 }
 
 async function uploadCsv(inputStream) {
-  const uploadDir = `${process.cwd()}/${process.env.UPLOAD_DIR}`;
+  const uploadDir = `${process.env.UPLOAD_DIR}`;
   if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir);
   }
@@ -55,7 +55,7 @@ async function uploadCsv(inputStream) {
   const csvToJson = createCsvToJson();
 
   try {
-    await promisifiedPipeline(inputStream, gunzip, byline, csvToJson, outputStream);
+    await promisifiedPipeline(inputStream, gunzip, es.split(), csvToJson, outputStream);
   } catch (err) {
     console.error('CSV pipeline failed', err);
 
