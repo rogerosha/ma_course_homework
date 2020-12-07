@@ -25,7 +25,7 @@ async function handleStreamRoutes(request, response) {
   const { url, method } = request;
   response.setHeader('Content-Type', 'application/json');
 
-  if (method === 'PUT' && url === '/upload/csv') {
+  if (method === 'POST' && url === '/upload/csv') {
     try {
       await uploadCsv(request);
     } catch (err) {
