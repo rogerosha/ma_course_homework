@@ -32,7 +32,7 @@ function createJsonOptimizer(optimizedGood) {
     let stringifiedChunk = chunk.toString();
 
     if (isFirstChunk) {
-      stringifiedChunk = stringifiedChunk.slice(1); // remove leading '['
+      stringifiedChunk = stringifiedChunk.slice(1);
       isFirstChunk = false;
     } else {
       stringifiedChunk = productFragment + stringifiedChunk;
@@ -40,8 +40,7 @@ function createJsonOptimizer(optimizedGood) {
 
     const stringifiedGoods = stringifiedChunk.split(',\n');
 
-    productFragment = stringifiedGoods.pop(); // move incomplete part
-
+    productFragment = stringifiedGoods.pop();
     if (stringifiedGoods.length === 0) {
       callback();
       return;
