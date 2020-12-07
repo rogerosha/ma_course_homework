@@ -1,63 +1,50 @@
 const { Transform } = require('stream');
 
-function makeGoods(csvKeys, newRow) {
-  return newRow.map((row) => {
-    const csvValues = row.split(',');
+function makeGoods(csvKeys, csvValues) {
+  const goodEntries = {};
 
-    const goodEntries = csvKeys.map((key, i) => {
-      let value = csvValues[i] || 'N/A';
+  csvKeys.forEach((key, i) => {
+    let value = csvValues[i] || 'N/A';
 
-      if (key === 'quantity') {
-        value = Number.parseInt(csvValues[i], 10);
-        if (Number.isNaN(value)) {
-          console.error('Uncorrect quantity', value);
-          value = 0;
-        }
+    if (key === 'quantity') {
+      value = Number.parseInt(csvValues[i], 10);
+      if (Number.isNaN(value)) {
+        console.error('Uncorrect quantity', value);
+        value = 0;
       }
-      if (key === 'price') value = `$${value}`;
+    }
+    if (key === 'price') value = `$${value}`;
 
-      return [key, value];
-    });
-    const good = Object.fromEntries(goodEntries);
-    return JSON.stringify(good);
+    goodEntries[key] = value;
   });
-}
 
+  return goodEntries;
+}
 function createCsvToJson() {
-  let csvKeys;
-  let goodFragment;
+  let firstLine;
+  let needComma = false;
 
   const transform = (chunk, encoding, callback) => {
     const newRow = chunk.toString().split(',');
+
+    if (!firstLine) {
+      firstLine = newRow;
+      return callback(null, '[');
+    }
+    if (newRow[0] === '') return callback(null, '');
     let output = '';
+    if (needComma) output += ',\n';
+    else needComma = true;
 
-    if (!csvKeys) {
-      csvKeys = newRow.shoft().split(',');
-      output += '[\n';
-    } else {
-      output += '\n';
-    }
+    const good = makeGoods(firstLine, newRow);
+    output += JSON.stringify(good);
 
-    if (goodFragment) {
-      newRow[0] = `${goodFragment}${newRow[0]}`;
-    }
-
-    goodFragment = newRow.pop();
-
-    if (newRow.length === 0) {
-      callback(null, '');
-      return;
-    }
-
-    const stringifiedGoods = makeGoods(csvKeys, newRow);
-    output += stringifiedGoods.join(',\n');
-
-    callback(null, output);
+    return callback(null, output);
   };
 
   const flush = (callback) => {
     console.log('No more data to read.');
-    callback(null, '\nFinish!');
+    callback(null, ']');
   };
   return new Transform({ transform, flush });
 }
