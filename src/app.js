@@ -9,6 +9,7 @@ function enableGracefulExit() {
     server.stop(() => {
       process.exit();
     });
+    process.exit(1);
   };
 
   process.on('SIGINT', exitHandler);
