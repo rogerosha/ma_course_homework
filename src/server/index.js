@@ -16,14 +16,6 @@ app.use('/', router);
 
 let server;
 
-app.use((req, res, next) => {
-  if (req.headers.token !== 'Academy') {
-    return res.status(401).send('Invalid password');
-  }
-  next();
-  return 0;
-});
-
 function start() {
   server = app.listen(config.port, () => console.log(`server is listening on ${config.port}`));
 }
