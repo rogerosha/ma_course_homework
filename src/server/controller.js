@@ -7,14 +7,14 @@ const { config } = require('../config');
 const { createJsonOptimizer } = require('../utils/optimize-json');
 const { tasks } = require('../services');
 
-const localProducts = require('../../goods.json');
+const localGoods = require('../../goods.json');
 
 const promisifiedPipeline = promisify(pipeline);
 
 const store = {
-  local: localProducts,
+  local: localGoods,
   uploaded: {},
-  current: localProducts,
+  current: localGoods,
 };
 
 function task1(req, res) {
@@ -34,13 +34,13 @@ function task3(req, res) {
 }
 
 function setStore(req, res) {
-  const newProducts = req.body;
-  store.uploaded = newProducts;
-  res.json(newProducts);
+  const newGoods = req.body;
+  store.uploaded = newGoods;
+  res.json(newGoods);
 }
 
 function switchStore(req, res) {
-  store.current = store.current === localProducts ? store.uploaded : localProducts;
+  store.current = store.current === localGoods ? store.uploaded : localGoods;
   res.json(store.current);
 }
 
@@ -65,8 +65,8 @@ async function optimizeJson(filename) {
 
   const fileReader = fs.createReadStream(filePath);
 
-  const optimizedProducts = [];
-  const optimizer = createJsonOptimizer(optimizedProducts);
+  const optimizedGoods = [];
+  const optimizer = createJsonOptimizer(optimizedGoods);
 
   try {
     await promisifiedPipeline(fileReader, optimizer);
@@ -75,7 +75,7 @@ async function optimizeJson(filename) {
   }
 
   try {
-    const optimizedJson = JSON.stringify(optimizedProducts);
+    const optimizedJson = JSON.stringify(optimizedGoods);
     await fs.promises.writeFile(optimizedFilePath, optimizedJson);
   } catch (err) {
     console.error(`Unable to write optimized JSON to ${optimizedDir}`, err);
@@ -89,11 +89,11 @@ async function optimizeJson(filename) {
     throw new Error('Unable to remove JSON');
   }
 
-  const totalQuantity = optimizedProducts.reduce((total, product) => {
-    return total + product.quantity;
+  const totalQuantity = optimizedGoods.reduce((total, good) => {
+    return total + good.quantity;
   }, 0);
 
-  console.log(`Optimization process finished. Total product quantity: ${totalQuantity}`);
+  console.log(`Optimization process finished. Total good quantity: ${totalQuantity}`);
 }
 
 module.exports = {
