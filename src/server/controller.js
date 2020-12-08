@@ -1,75 +1,51 @@
 const fs = require('fs');
 const path = require('path');
 const { pipeline } = require('stream');
-const { createGunzip } = require('zlib');
 const { promisify } = require('util');
-const { nanoid } = require('nanoid');
-const es = require('event-stream');
+const { config } = require('../config');
 
-const { createCsvToJson } = require('../utils/csv-to-json');
 const { createJsonOptimizer } = require('../utils/optimize-json');
-const tasks = require('../task');
+const { tasks } = require('../services');
 
-const goodsList = require('../../goods.json');
+const localProducts = require('../../goods.json');
 
 const promisifiedPipeline = promisify(pipeline);
 
-const pathToFile = path.resolve(__dirname, '../../', 'goods.json');
-
 const store = {
-  local: goodsList,
+  local: localProducts,
   uploaded: {},
-  current: goodsList,
+  current: localProducts,
 };
 
-function filterGoods(property, value) {
-  return tasks.filterGoods(store.current, property, value);
+function task1(req, res) {
+  const { field, value } = req.query;
+  const result = tasks.task1(store.current, field, value);
+  res.json(result);
 }
 
-function findMostExpensiveGoods() {
-  return tasks.FindMostExpensiveGoods;
+function task2(req, res) {
+  const result = tasks.task2;
+  res.json(result);
 }
 
-function remapGoods() {
-  return tasks.remapGoods(store.current);
+function task3(req, res) {
+  const result = tasks.task3(store.current);
+  res.json(result);
 }
 
-function setStore(newProducts) {
+function setStore(req, res) {
+  const newProducts = req.body;
   store.uploaded = newProducts;
+  res.json(newProducts);
 }
 
-function switchStore() {
-  store.current = store.current === goodsList ? store.uploaded : goodsList;
-}
-
-async function uploadCsv(inputStream) {
-  const uploadDir = `${process.env.UPLOAD_DIR}`;
-  if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir);
-  }
-  const gunzip = createGunzip();
-
-  const timestamp = Date.now();
-  const filePath = `${uploadDir}/${timestamp}-${nanoid()}.json`;
-  const outputStream = fs.createWriteStream(filePath);
-  const csvToJson = createCsvToJson();
-
-  try {
-    await promisifiedPipeline(inputStream, gunzip, es.split(), csvToJson, outputStream);
-  } catch (err) {
-    console.error('CSV pipeline failed', err);
-
-    try {
-      await fs.unlinkSync(filePath);
-    } catch (rmErr) {
-      console.error(`Unable to remove JSON ${filePath}`, rmErr);
-      throw new Error('Unable to remove JSON');
-    }
-  }
+function switchStore(req, res) {
+  store.current = store.current === localProducts ? store.uploaded : localProducts;
+  res.json(store.current);
 }
 
 async function getUploadFileList() {
-  const uploadDir = process.env.UPLOAD_DIR;
+  const { uploadDir } = config;
 
   try {
     const files = await fs.promises.readdir(uploadDir);
@@ -82,10 +58,9 @@ async function getUploadFileList() {
 }
 
 async function optimizeJson(filename) {
-  const uploadDir = process.env.UPLOAD_DIR;
+  const { uploadDir, optimizedDir } = config;
   const filePath = path.join(uploadDir, filename);
 
-  const optimizedDir = process.env.OPTIMIZED_DIR;
   const optimizedFilePath = path.join(optimizedDir, filename);
 
   const fileReader = fs.createReadStream(filePath);
@@ -121,74 +96,12 @@ async function optimizeJson(filename) {
   console.log(`Optimization process finished. Total product quantity: ${totalQuantity}`);
 }
 
-const goods = require('../../goods.json');
-const { task1: firstTask, task2: secondTask, task3: thirdTask } = require('../task');
-const { notFound } = require('./router.js');
-const { generateValidDiscountPromise } = require('../discount/discount.js');
-
-let goodsArr = [];
-
-function task1(response, queryParams) {
-  if (queryParams.field === 'quantity') {
-    goodsArr = firstTask(goods, queryParams.field, +queryParams.value);
-  } else {
-    goodsArr = firstTask(goods, queryParams.field, queryParams.value);
-  }
-  response.end(JSON.stringify(goodsArr));
-}
-
-function task2(response) {
-  response.end(JSON.stringify(secondTask));
-}
-
-function task3(response) {
-  response.end(JSON.stringify(thirdTask(goods)));
-}
-
-function newFile(data, response) {
-  if (
-    Array.isArray(data) ||
-    data.some((param) => param.type || param.color || param.price || param.priceForPair)
-  )
-    return notFound(response);
-  fs.writeFileSync(pathToFile, JSON.stringify(data, null, 1));
-  response.end(JSON.stringify(data));
-  return response.end();
-}
-
-async function addDiscount(response) {
-  const productsWithDiscount = await Promise.all(
-    goods.map(async (valueIs) => {
-      let discount = await generateValidDiscountPromise();
-
-      if (valueIs.type === 'hat') {
-        discount += await generateValidDiscountPromise();
-      }
-
-      if (valueIs.type === 'hat' && valueIs.color === 'red') {
-        discount += await generateValidDiscountPromise();
-      }
-
-      valueIs.discount = discount;
-
-      return valueIs;
-    }),
-  );
-  response.end(JSON.stringify(productsWithDiscount));
-}
-
 module.exports = {
-  filterGoods,
-  findMostExpensiveGoods,
-  remapGoods,
   task1,
   task2,
   task3,
-  newFile,
-  addDiscount,
   setStore,
   switchStore,
-  uploadCsv,
   getUploadFileList,
   optimizeJson,
 };
