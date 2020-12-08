@@ -35,7 +35,7 @@ async function handleStreamRoutes(request, response) {
       response.end('500 server error');
       return;
     }
-    makeEndResponse(response, { status: 'ok' });
+    makeEndResponse(response, { status: 'everything is okay' });
     return;
   }
   notFound(response);

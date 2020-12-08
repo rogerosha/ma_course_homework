@@ -3,6 +3,7 @@ const path = require('path');
 const { pipeline } = require('stream');
 const { createGunzip } = require('zlib');
 const { promisify } = require('util');
+
 const { nanoid } = require('nanoid');
 const es = require('event-stream');
 
@@ -14,28 +15,26 @@ const goodsList = require('../../goods.json');
 
 const promisifiedPipeline = promisify(pipeline);
 
-const pathToFile = path.resolve(__dirname, '../../', 'goods.json');
-
 const store = {
   local: goodsList,
   uploaded: {},
   current: goodsList,
 };
 
-function filterGoods(property, value) {
-  return tasks.filterGoods(store.current, property, value);
+function task1(property, value) {
+  return tasks.task1(store.current, property, value);
 }
 
-function findMostExpensiveGoods() {
-  return tasks.FindMostExpensiveGoods;
+function task2() {
+  return tasks.task2;
 }
 
-function remapGoods() {
-  return tasks.remapGoods(store.current);
+function task3() {
+  return tasks.task3(store.current);
 }
 
-function setStore(newProducts) {
-  store.uploaded = newProducts;
+function setStore(newGoods) {
+  store.uploaded = newGoods;
 }
 
 function switchStore() {
@@ -90,8 +89,8 @@ async function optimizeJson(filename) {
 
   const fileReader = fs.createReadStream(filePath);
 
-  const optimizedProducts = [];
-  const optimizer = createJsonOptimizer(optimizedProducts);
+  const optimizedGoods = [];
+  const optimizer = createJsonOptimizer(optimizedGoods);
 
   try {
     await promisifiedPipeline(fileReader, optimizer);
@@ -100,7 +99,7 @@ async function optimizeJson(filename) {
   }
 
   try {
-    const optimizedJson = JSON.stringify(optimizedProducts);
+    const optimizedJson = JSON.stringify(optimizedGoods);
     await fs.promises.writeFile(optimizedFilePath, optimizedJson);
   } catch (err) {
     console.error(`Unable to write optimized JSON to ${optimizedDir}`, err);
@@ -114,78 +113,17 @@ async function optimizeJson(filename) {
     throw new Error('Unable to remove JSON');
   }
 
-  const totalQuantity = optimizedProducts.reduce((total, product) => {
-    return total + product.quantity;
+  const totalQuantity = optimizedGoods.reduce((total, good) => {
+    return total + good.quantity;
   }, 0);
 
-  console.log(`Optimization process finished. Total product quantity: ${totalQuantity}`);
-}
-
-const goods = require('../../goods.json');
-const { task1: firstTask, task2: secondTask, task3: thirdTask } = require('../task');
-const { notFound } = require('./router.js');
-const { generateValidDiscountPromise } = require('../discount/discount.js');
-
-let goodsArr = [];
-
-function task1(response, queryParams) {
-  if (queryParams.field === 'quantity') {
-    goodsArr = firstTask(goods, queryParams.field, +queryParams.value);
-  } else {
-    goodsArr = firstTask(goods, queryParams.field, queryParams.value);
-  }
-  response.end(JSON.stringify(goodsArr));
-}
-
-function task2(response) {
-  response.end(JSON.stringify(secondTask));
-}
-
-function task3(response) {
-  response.end(JSON.stringify(thirdTask(goods)));
-}
-
-function newFile(data, response) {
-  if (
-    Array.isArray(data) ||
-    data.some((param) => param.type || param.color || param.price || param.priceForPair)
-  )
-    return notFound(response);
-  fs.writeFileSync(pathToFile, JSON.stringify(data, null, 1));
-  response.end(JSON.stringify(data));
-  return response.end();
-}
-
-async function addDiscount(response) {
-  const productsWithDiscount = await Promise.all(
-    goods.map(async (valueIs) => {
-      let discount = await generateValidDiscountPromise();
-
-      if (valueIs.type === 'hat') {
-        discount += await generateValidDiscountPromise();
-      }
-
-      if (valueIs.type === 'hat' && valueIs.color === 'red') {
-        discount += await generateValidDiscountPromise();
-      }
-
-      valueIs.discount = discount;
-
-      return valueIs;
-    }),
-  );
-  response.end(JSON.stringify(productsWithDiscount));
+  console.log(`Optimization process finished. Total good quantity: ${totalQuantity}`);
 }
 
 module.exports = {
-  filterGoods,
-  findMostExpensiveGoods,
-  remapGoods,
   task1,
   task2,
   task3,
-  newFile,
-  addDiscount,
   setStore,
   switchStore,
   uploadCsv,
