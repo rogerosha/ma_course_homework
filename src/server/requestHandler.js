@@ -8,7 +8,7 @@ module.exports = async (request, response) => {
     const parsedUrl = new URL(url, process.env.ORIGIN);
     const queryParams = parseQuery(parsedUrl.search.substr(1));
 
-    if (request.headers['content-type'] === 'text/csv') {
+    if (request.headers['content-type'] === 'application/gzip') {
       handleStreamRoutes(request, response).catch((err) =>
         console.error('CSV handler failed', err),
       );
