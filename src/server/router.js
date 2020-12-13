@@ -44,9 +44,9 @@ async function handleStreamRoutes(request, response) {
 async function handleRoutes(request, response) {
   const endResponse = makeEndResponse(response);
   const { body, url, method } = request;
-  const urlPath = path.parse(url.pathname);
+  const urlPath = path.parse(url);
 
-  if (method === 'GET' && url.pathname === '/task1?') {
+  if (method === 'GET' && url === '/task1?') {
     const property = url.searchParams.get('property');
     const value = url.searchParams.get('value');
     const result = task1(property, value);
@@ -55,13 +55,13 @@ async function handleRoutes(request, response) {
     return;
   }
 
-  if (method === 'GET' && url.pathname === '/task2') {
+  if (method === 'GET' && url === '/task2') {
     const result = task2();
     endResponse(result);
     return;
   }
 
-  if (method === 'GET' && url.pathname === '/task3') {
+  if (method === 'GET' && url === '/task3') {
     const result = task3();
     endResponse(result);
     return;
@@ -73,13 +73,13 @@ async function handleRoutes(request, response) {
     return;
   }
 
-  if (method === 'GET' && url.pathname === '/store/switch') {
+  if (method === 'GET' && url === '/store/switch') {
     switchStore();
     endResponse();
     return;
   }
 
-  if (method === 'GET' && url.pathname === '/upload') {
+  if (method === 'GET' && url === '/upload') {
     try {
       const fileList = await getUploadFileList();
       endResponse(fileList);
