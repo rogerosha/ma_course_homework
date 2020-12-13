@@ -16,8 +16,8 @@ function notFound(res) {
   res.end('404 page not found');
 }
 
-function makeEndResponse(response, message) {
-  response.statusCode = 200;
+function makeEndResponse(response, message, statusCode = 200) {
+  response.statusCode = statusCode;
   response.end(JSON.stringify(message));
 }
 
@@ -30,9 +30,7 @@ async function handleStreamRoutes(request, response) {
       await uploadCsv(request);
     } catch (err) {
       console.error('Failed to upload CSV', err);
-
-      response.statusCode = 500;
-      response.end('500 server error');
+      makeEndResponse(response, { status: err.message }, 500);
       return;
     }
     makeEndResponse(response, { status: 'everything is okay' });
@@ -42,50 +40,49 @@ async function handleStreamRoutes(request, response) {
 }
 
 async function handleRoutes(request, response) {
-  const endResponse = makeEndResponse(response);
-  const { body, url, method } = request;
+  const { body, url, method, queryParams } = request;
   const urlPath = path.parse(url);
+  response.setHeader('Content-Type', 'application/json');
 
-  if (method === 'GET' && url === '/task1?') {
-    const property = url.searchParams.get('property');
-    const value = url.searchParams.get('value');
-    const result = task1(property, value);
+  if (method === 'GET' && url.split('?')[0] === '/task1') {
+    const { property, value } = queryParams;
+    const result = task1(property, +value);
 
-    endResponse(result);
+    makeEndResponse(response, result);
     return;
   }
 
   if (method === 'GET' && url === '/task2') {
     const result = task2();
-    endResponse(result);
+    makeEndResponse(response, result);
     return;
   }
 
   if (method === 'GET' && url === '/task3') {
     const result = task3();
-    endResponse(result);
+    makeEndResponse(response, result);
     return;
   }
 
   if (method === 'POST' && url === '/store') {
     setStore(body);
-    endResponse();
+    makeEndResponse(response, { status: 'ok' });
     return;
   }
 
   if (method === 'GET' && url === '/store/switch') {
     switchStore();
-    endResponse();
+    makeEndResponse(response, { status: 'ok' });
     return;
   }
 
   if (method === 'GET' && url === '/upload') {
     try {
       const fileList = await getUploadFileList();
-      endResponse(fileList);
+      makeEndResponse(response, fileList);
     } catch (err) {
       console.error('Failed to get file list', err);
-      endResponse({ status: 'error' }, 500);
+      makeEndResponse(response, { status: err.message }, 500);
     }
     return;
   }
@@ -95,15 +92,14 @@ async function handleRoutes(request, response) {
     try {
       await getUploadFileList(request);
     } catch (err) {
-      response.setHeader('Content-Type', 'application/json');
-      response.end(JSON.stringify({ status: 500 }));
+      makeEndResponse(response, { status: err.message }, 500);
       return;
     }
     optimizeJson(fileName).catch((err) => {
       console.error('Something goes wrong', err);
-      endResponse({ status: 'error' }, 500);
+      makeEndResponse(response, { status: err.message }, 500);
     });
-    endResponse({ status: 'okay' }, 202);
+    makeEndResponse(response, { status: 'okay' }, 202);
     return;
   }
 
