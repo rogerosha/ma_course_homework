@@ -29,14 +29,15 @@ async function handleStreamRoutes(request, response) {
   response.setHeader('Content-Type', 'application/json');
 
   if (method === 'POST' && url === '/upload/csv') {
+    let fileName = '';
     try {
-      await uploadCsv(request);
+      fileName = await uploadCsv(request);
     } catch (err) {
       console.error('Failed to upload CSV', err);
       endResponse({ status: err.message }, 500);
       return;
     }
-    endResponse({ status: 'everything is okay' });
+    endResponse({ fileName, status: 'everything is okay' });
     return;
   }
   notFound(response);
@@ -91,10 +92,10 @@ async function handleRoutes(request, response) {
     return;
   }
 
-  if (method === 'PUT' && urlPath.dir === '/upload/optimize') {
+  if (method === 'POST' && urlPath.dir === '/upload/optimize') {
     const fileName = urlPath.base;
     try {
-      await getUploadFileList(request);
+      await getUploadFileList();
     } catch (err) {
       endResponse({ status: err.message }, 500);
       return;
