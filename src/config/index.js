@@ -1,15 +1,15 @@
 require('dotenv').config();
-const { failedToLogIn } = require('./authorizeError');
+const { closeProgram } = require('./closeProgram');
 
 const config = {
   port: Number(process.env.PORT) || 3000,
-  uploadDir: process.env.UPLOAD_DIR || process.exit(1),
-  optimizedDir: process.env.OPTIMIZED_DIR || process.exit(1),
+  uploadDir: process.env.UPLOAD_DIR || closeProgram('No upload dir'),
+  optimizedDir: process.env.OPTIMIZED_DIR || closeProgram('No optimized dir'),
 };
 
 const user = {
-  name: process.env.USER_NAME || failedToLogIn('Invalid name'),
-  password: process.env.PASSWORD || failedToLogIn('Invalid password'),
+  name: process.env.USER_NAME || closeProgram('Invalid name'),
+  password: process.env.PASSWORD || closeProgram('Invalid password'),
 };
 
 module.exports = {
