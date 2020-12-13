@@ -1,16 +1,20 @@
-const { name, password } = require('../../config/index.js');
+const { user } = require('../../config');
 
 module.exports = (req, res, next) => {
   try {
-    const token = req.headers.authorization.split(' ')[1];
-    const decodedToken = password.verify(token, 'base64');
-    const userId = decodedToken.userId;
-    if (req.body.userId && req.body.userId !== userId) {
-      throw 'Invalid user ID';
-    } else {
+    const header = req.headers.authorization || '';
+    const token = header.split(/\s+/).pop() || '';
+    const auth = Buffer.from(token, 'base64').toString();
+    const parts = auth.split(/:/);
+    const authUsername = parts[0] || '';
+    const authPassword = parts[1] || '';
+
+    if (authUsername === user.name && authPassword === user.password) {
       next();
+    } else {
+      res.status(401).json({ error: 'Invalid username or password!' });
     }
-  } catch {
+  } catch (error) {
     res.status(401).json({ error: 'Invalid request!' });
   }
 };
