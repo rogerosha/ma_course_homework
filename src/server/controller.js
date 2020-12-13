@@ -49,7 +49,8 @@ async function uploadCsv(inputStream) {
   const gunzip = createGunzip();
 
   const timestamp = Date.now();
-  const filePath = `${uploadDir}/${timestamp}-${nanoid()}.json`;
+  const fileName = `${timestamp}-${nanoid()}.json`;
+  const filePath = `${uploadDir}/${fileName}`;
   const outputStream = fs.createWriteStream(filePath);
   const csvToJson = createCsvToJson();
 
@@ -65,6 +66,8 @@ async function uploadCsv(inputStream) {
       throw new Error('Unable to remove JSON');
     }
   }
+
+  return fileName;
 }
 
 async function getUploadFileList() {
@@ -99,7 +102,11 @@ async function optimizeJson(filename) {
   }
 
   try {
-    const optimizedJson = JSON.stringify(optimizedGoods);
+    const optimizedJson = JSON.stringify(optimizedGoods, null, 2);
+    if (!fs.existsSync(optimizedDir)) {
+      fs.mkdirSync(optimizedDir);
+    }
+
     await fs.promises.writeFile(optimizedFilePath, optimizedJson);
   } catch (err) {
     console.error(`Unable to write optimized JSON to ${optimizedDir}`, err);
@@ -107,7 +114,7 @@ async function optimizeJson(filename) {
   }
 
   try {
-    await fs.promises.rm(filePath);
+    await fs.promises.unlink(filePath);
   } catch (err) {
     console.error(`Unable to remove JSON ${filePath}`, err);
     throw new Error('Unable to remove JSON');
