@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const { config } = require('../config');
 const { router } = require('./router.js');
 const authorizeCheck = require('./middlewares/authorizeCheck');
+const { errorHandler } = require('./middlewares/errorHandler');
 
 const app = express();
 
@@ -13,6 +14,7 @@ app.use(
   }),
 );
 app.use(authorizeCheck);
+app.use(errorHandler);
 
 app.use('/', router);
 
