@@ -12,9 +12,9 @@ module.exports = (req, res, next) => {
     if (authUsername === user.name && authPassword === user.password) {
       next();
     } else {
-      res.status(401).json({ error: 'Invalid username or password!' });
+      throw new Error('Authorize');
     }
   } catch (error) {
-    res.status(401).json({ error: 'Invalid request!' });
+    throw new Error('Authorize');
   }
 };
