@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const { config } = require('../config');
 const { router } = require('./router.js');
+const authorizeCheck = require('./middlewares/authorizeCheck');
 
 const app = express();
 
@@ -11,6 +12,7 @@ app.use(
     extended: true,
   }),
 );
+app.use(authorizeCheck);
 
 app.use('/', router);
 
