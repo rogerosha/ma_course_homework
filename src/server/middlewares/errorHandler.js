@@ -1,7 +1,7 @@
 function errorHandler(err, req, res, next) {
-  console.error(err);
-  switch (err.name) {
-    case 'Fail':
+  console.error(err.message);
+  switch (err.message) {
+    case 'Authorize':
       res.status(403).json({ error: 'Authorization failed' });
       break;
     default:
