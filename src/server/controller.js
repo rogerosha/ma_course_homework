@@ -1,51 +1,77 @@
 const fs = require('fs');
 const path = require('path');
 const { pipeline } = require('stream');
+const { createGunzip } = require('zlib');
 const { promisify } = require('util');
-const { config } = require('../config');
 
+const { nanoid } = require('nanoid');
+const es = require('event-stream');
+
+const { createCsvToJson } = require('../utils/csv-to-json');
 const { createJsonOptimizer } = require('../utils/optimize-json');
-const { tasks } = require('../services');
+const tasks = require('../task');
 
-const localGoods = require('../../goods.json');
+const goodsList = require('../../goods.json');
 
 const promisifiedPipeline = promisify(pipeline);
 
 const store = {
-  local: localGoods,
+  local: goodsList,
   uploaded: {},
-  current: localGoods,
+  current: goodsList,
 };
 
-function task1(req, res) {
-  const { field, value } = req.query;
-  const result = tasks.task1(store.current, field, value);
-  res.json(result);
+function task1(property, value) {
+  return tasks.task1(store.current, property, value);
 }
 
-function task2(req, res) {
-  const result = tasks.task2;
-  res.json(result);
+function task2() {
+  return tasks.task2;
 }
 
-function task3(req, res) {
-  const result = tasks.task3(store.current);
-  res.json(result);
+function task3() {
+  return tasks.task3(store.current);
 }
 
-function setStore(req, res) {
-  const newGoods = req.body;
+function setStore(newGoods) {
   store.uploaded = newGoods;
-  res.json(newGoods);
 }
 
-function switchStore(req, res) {
-  store.current = store.current === localGoods ? store.uploaded : localGoods;
-  res.json(store.current);
+function switchStore() {
+  store.current = store.current === goodsList ? store.uploaded : goodsList;
+}
+
+async function uploadCsv(inputStream) {
+  const uploadDir = `${process.env.UPLOAD_DIR}`;
+  if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir);
+  }
+  const gunzip = createGunzip();
+
+  const timestamp = Date.now();
+  const fileName = `${timestamp}-${nanoid()}.json`;
+  const filePath = `${uploadDir}/${fileName}`;
+  const outputStream = fs.createWriteStream(filePath);
+  const csvToJson = createCsvToJson();
+
+  try {
+    await promisifiedPipeline(inputStream, gunzip, es.split(), csvToJson, outputStream);
+  } catch (err) {
+    console.error('CSV pipeline failed', err);
+
+    try {
+      await fs.unlinkSync(filePath);
+    } catch (rmErr) {
+      console.error(`Unable to remove JSON ${filePath}`, rmErr);
+      throw new Error('Unable to remove JSON');
+    }
+  }
+
+  return fileName;
 }
 
 async function getUploadFileList() {
-  const { uploadDir } = config;
+  const uploadDir = process.env.UPLOAD_DIR;
 
   try {
     const files = await fs.promises.readdir(uploadDir);
@@ -58,9 +84,10 @@ async function getUploadFileList() {
 }
 
 async function optimizeJson(filename) {
-  const { uploadDir, optimizedDir } = config;
+  const uploadDir = process.env.UPLOAD_DIR;
   const filePath = path.join(uploadDir, filename);
 
+  const optimizedDir = process.env.OPTIMIZED_DIR;
   const optimizedFilePath = path.join(optimizedDir, filename);
 
   const fileReader = fs.createReadStream(filePath);
@@ -75,7 +102,11 @@ async function optimizeJson(filename) {
   }
 
   try {
-    const optimizedJson = JSON.stringify(optimizedGoods);
+    const optimizedJson = JSON.stringify(optimizedGoods, null, 2);
+    if (!fs.existsSync(optimizedDir)) {
+      fs.mkdirSync(optimizedDir);
+    }
+
     await fs.promises.writeFile(optimizedFilePath, optimizedJson);
   } catch (err) {
     console.error(`Unable to write optimized JSON to ${optimizedDir}`, err);
@@ -102,6 +133,7 @@ module.exports = {
   task3,
   setStore,
   switchStore,
+  uploadCsv,
   getUploadFileList,
   optimizeJson,
 };
