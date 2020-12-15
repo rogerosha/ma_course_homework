@@ -1,11 +1,13 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const { addAsync } = require('@awaitjs/express');
 const { config } = require('../config');
 const { router } = require('./router.js');
 const authorizeCheck = require('./middlewares/authorizeCheck');
 const { errorHandler } = require('./middlewares/errorHandler');
 
-const app = express();
+// const app = express();
+const app = addAsync(express());
 
 app.use(bodyParser.json());
 app.use(
@@ -13,10 +15,9 @@ app.use(
     extended: true,
   }),
 );
-app.use(authorizeCheck);
-app.use(errorHandler);
 
-app.use('/', router);
+app.useAsync('/', authorizeCheck, router);
+app.use(errorHandler);
 
 let server;
 
