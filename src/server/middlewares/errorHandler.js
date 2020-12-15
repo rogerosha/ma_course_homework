@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-unused-vars
 function errorHandler(err, req, res, next) {
   console.error(err.message);
   switch (err.message) {
@@ -8,7 +9,6 @@ function errorHandler(err, req, res, next) {
       res.status(500).json({ error: 'Server error' });
       break;
   }
-  return next();
 }
 
 module.exports = {
