@@ -1,47 +1,28 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const { config } = require('../config');
-const { router } = require('./router.js');
-const authorizeCheck = require('./middlewares/authorizeCheck');
-const { errorHandler } = require('./middlewares/errorHandler');
+const http = require('http');
+const requestHandler = require('./requestHandler');
 
-const app = express();
-
-app.use(bodyParser.json());
-app.use(
-  bodyParser.urlencoded({
-    extended: true,
-  }),
-);
-app.use(authorizeCheck);
-app.use(errorHandler);
-
-app.use('/', router);
-
-let server;
+const server = http.createServer(requestHandler);
 
 function start() {
-  server = app.listen(config.port, () => console.log(`server is listening on ${config.port}`));
+  server.listen(Number(process.env.PORT), () =>
+    console.log(`server is listening on ${process.env.PORT}`),
+  );
 }
 
 function stop(callback) {
-  if (!server) return console.error('Server is not running');
-
   server.close((err) => {
     if (err) {
-      console.error(err, 'Failed to close server');
+      console.error(err, 'Failed to close server!');
       callback();
       return;
     }
 
-    console.log('\n\nServer is stopped!\n');
+    console.log('Server has been stopped.');
     callback();
   });
-  return 0;
 }
 
 module.exports = {
   start,
   stop,
-  app,
 };

@@ -1,4 +1,4 @@
-const goods = require('../../../goods.json');
+const goods = require('../../goods.json');
 
 function task2(inputGoods) {
   let maxPrice = 0;

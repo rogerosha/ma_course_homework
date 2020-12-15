@@ -1,4 +1,4 @@
-const express = require('express');
+const path = require('path');
 
 const {
   task1,
@@ -6,44 +6,112 @@ const {
   task3,
   setStore,
   switchStore,
+  uploadCsv,
   getUploadFileList,
   optimizeJson,
 } = require('./controller.js');
 
-const router = express.Router();
+function notFound(res) {
+  res.statusCode = 404;
+  res.end('404 page not found');
+}
 
-router.get('/task1', task1);
-router.get('/task2', task2);
-router.get('/task3', task3);
+function makeEndResponse(response) {
+  return (message, statusCode = 200) => {
+    response.statusCode = statusCode;
+    response.end(JSON.stringify(message));
+  };
+}
 
-router.post('/store', setStore);
-router.get('/store/switch', switchStore);
+async function handleStreamRoutes(request, response) {
+  const endResponse = makeEndResponse(response);
+  const { url, method } = request;
+  response.setHeader('Content-Type', 'application/json');
 
-router.get('/upload', async (req, res) => {
-  try {
-    const fileList = await getUploadFileList();
-    res.json(fileList);
-  } catch (err) {
-    console.error('Failed to get file list', err);
-    res.json({ status: 'error' }, 500);
-  }
-});
-
-router.put('/upload/optimize/:fileName', async (req, res) => {
-  const { fileName } = req.params;
-  try {
-    await getUploadFileList();
-  } catch (err) {
-    res.json({ status: 500 });
+  if (method === 'POST' && url === '/upload/csv') {
+    let fileName = '';
+    try {
+      fileName = await uploadCsv(request);
+    } catch (err) {
+      console.error('Failed to upload CSV', err);
+      endResponse({ status: err.message }, 500);
+      return;
+    }
+    endResponse({ fileName, status: 'everything is okay' });
     return;
   }
-  optimizeJson(fileName).catch((err) => {
-    console.error('Something goes wrong', err);
-    res.json({ status: 'error' }, 500);
-  });
-  res.json({ status: 'okay' }, 202);
-});
+  notFound(response);
+}
+
+async function handleRoutes(request, response) {
+  const { body, url, method, queryParams } = request;
+  const urlPath = path.parse(url);
+  const endResponse = makeEndResponse(response);
+  response.setHeader('Content-Type', 'application/json');
+
+  if (method === 'GET' && url.split('?')[0] === '/task1') {
+    const { property, value } = queryParams;
+    const result = task1(property, +value);
+
+    endResponse(result);
+    return;
+  }
+
+  if (method === 'GET' && url === '/task2') {
+    const result = task2();
+    endResponse(result);
+    return;
+  }
+
+  if (method === 'GET' && url === '/task3') {
+    const result = task3();
+    endResponse(result);
+    return;
+  }
+
+  if (method === 'POST' && url === '/store') {
+    setStore(body);
+    endResponse({ status: 'ok' });
+    return;
+  }
+
+  if (method === 'GET' && url === '/store/switch') {
+    switchStore();
+    endResponse({ status: 'ok' });
+    return;
+  }
+
+  if (method === 'GET' && url === '/upload') {
+    try {
+      const fileList = await getUploadFileList();
+      endResponse(fileList);
+    } catch (err) {
+      console.error('Failed to get file list', err);
+      endResponse({ status: err.message }, 500);
+    }
+    return;
+  }
+
+  if (method === 'POST' && urlPath.dir === '/upload/optimize') {
+    const fileName = urlPath.base;
+    try {
+      await getUploadFileList();
+    } catch (err) {
+      endResponse({ status: err.message }, 500);
+      return;
+    }
+    optimizeJson(fileName).catch((err) => {
+      console.error('Something goes wrong', err);
+      endResponse({ status: err.message }, 500);
+    });
+    endResponse({ status: 'okay' }, 202);
+    return;
+  }
+
+  notFound(response);
+}
 
 module.exports = {
-  router,
+  handleRoutes,
+  handleStreamRoutes,
 };
