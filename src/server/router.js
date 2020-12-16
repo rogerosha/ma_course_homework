@@ -9,6 +9,7 @@ const {
   getUploadFileList,
   optimizeJson,
 } = require('./controller.js');
+const { notFound } = require('./middlewares/errorHandler.js');
 
 const router = express.Router();
 
@@ -43,6 +44,8 @@ router.put('/upload/optimize/:fileName', async (req, res) => {
   });
   res.json({ status: 'okay' }, 202);
 });
+
+router.use(notFound);
 
 module.exports = {
   router,
