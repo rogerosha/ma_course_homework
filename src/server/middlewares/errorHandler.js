@@ -11,6 +11,14 @@ function errorHandler(err, req, res, next) {
   }
 }
 
+function notFound(req, res, next) {
+  if (!req.route) {
+    res.status(404).json({ status: 'not found' });
+  }
+  return next();
+}
+
 module.exports = {
   errorHandler,
+  notFound,
 };
