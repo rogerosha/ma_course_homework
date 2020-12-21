@@ -16,7 +16,7 @@ app.use(
   }),
 );
 
-app.useAsync('/', authorizeCheck, router);
+app.use('/', authorizeCheck, router);
 app.use(errorHandler);
 
 let server;
