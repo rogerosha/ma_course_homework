@@ -1,4 +1,4 @@
-const express = require('express');
+const { Router } = require('@awaitjs/express');
 
 const {
   task1,
@@ -10,8 +10,9 @@ const {
   optimizeJson,
 } = require('./controller.js');
 const { notFound } = require('./middlewares/errorHandler.js');
+const { csvUploadFile } = require('./csvUploadFile');
 
-const router = express.Router();
+const router = Router();
 
 router.get('/task1', task1);
 router.get('/task2', task2);
@@ -20,13 +21,23 @@ router.get('/task3', task3);
 router.post('/store', setStore);
 router.get('/store/switch', switchStore);
 
-router.get('/upload', async (req, res) => {
+router.getAsync('/upload', async (req, res) => {
   try {
     const fileList = await getUploadFileList();
     res.json(fileList);
   } catch (err) {
     console.error('Failed to get file list', err);
-    res.json({ status: 'error' }, 500);
+    res.status(500).json({ status: 'error' });
+  }
+});
+
+router.postAsync('/upload/csv', async (req, res) => {
+  try {
+    csvUploadFile(req);
+    res.status(201).json({ status: 'your file uploaded' });
+  } catch (err) {
+    console.error('Failed to upload csv', err);
+    res.status(500).json({ status: err.message });
   }
 });
 
