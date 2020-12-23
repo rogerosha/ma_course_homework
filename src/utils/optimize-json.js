@@ -20,7 +20,7 @@ function applyToOptimized(optimizedGoods, stringifiedGoods) {
       return;
     }
 
-    optimizedGood.push(good);
+    optimizedGoods.push(good);
   });
 }
 
