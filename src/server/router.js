@@ -41,19 +41,19 @@ router.postAsync('/upload/csv', async (req, res) => {
   }
 });
 
-router.put('/upload/optimize/:fileName', async (req, res) => {
+router.putAsync('/upload/optimize/:fileName', async (req, res) => {
   const { fileName } = req.params;
   try {
     await getUploadFileList();
   } catch (err) {
-    res.json({ status: 500 });
+    res.status(500).json({ status: 'error' });
     return;
   }
-  optimizeJson(fileName).catch((err) => {
+  await optimizeJson(fileName).catch((err) => {
     console.error('Something goes wrong', err);
-    res.json({ status: 'error' }, 500);
+    res.status(500).json({ status: 'error' });
   });
-  res.json({ status: 'okay' }, 202);
+  res.status(202).json({ status: 'okay' });
 });
 
 router.use(notFound);
