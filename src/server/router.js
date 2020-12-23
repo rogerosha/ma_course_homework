@@ -33,8 +33,8 @@ router.getAsync('/upload', async (req, res) => {
 
 router.postAsync('/upload/csv', async (req, res) => {
   try {
-    csvUploadFile(req);
-    res.status(201).json({ status: 'your file uploaded' });
+    const fileName = await csvUploadFile(req);
+    res.status(201).json({ status: 'your file uploaded', fileName });
   } catch (err) {
     console.error('Failed to upload csv', err);
     res.status(500).json({ status: err.message });
