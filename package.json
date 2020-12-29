@@ -20,7 +20,8 @@
     "dotenv": "^8.2.0",
     "event-stream": "^4.0.1",
     "express": "^4.17.1",
-    "nanoid": "^3.1.18"
+    "nanoid": "^3.1.18",
+    "pg": "^8.5.1"
   },
   "devDependencies": {
     "nodemon": "^2.0.6",
