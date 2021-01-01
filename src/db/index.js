@@ -1,25 +1,23 @@
 const { Pool } = require('pg');
+const client = new Pool(config);
+const { db: config } = require('../config');
 
-module.exports = (config) => {
-  const client = new Pool(config);
-
-  return {
-    testConnection: async () => {
+async function testConnection() {
       try {
-        console.log('hello from pg testConnection');
+        console.log('Hello from pg testConnection');
         await client.query('SELECT NOW()');
       } catch (err) {
         console.error(err.message || err);
         throw err;
       }
-    },
+    }
 
-    close: async () => {
+async function close() {
       console.log('INFO: Closing pg DB wrapper');
       client.end();
-    },
+    }
 
-    createProduct: async ({ type, color, price = 0, quantity = 1 }) => {
+async function createProduct({ type, color, price = 0, quantity = 1 }) {
       try {
         if (!type) {
           throw new Error('ERROR: No product type defined');
@@ -40,9 +38,9 @@ module.exports = (config) => {
         console.error(err.message || err);
         throw err;
       }
-    },
+    }
 
-    getProduct: async (id) => {
+async function getProduct(id) {
       try {
         if (!id) {
           throw new Error('ERROR: No product id defined');
@@ -57,9 +55,9 @@ module.exports = (config) => {
         console.error(err.message || err);
         throw err;
       }
-    },
+    }
 
-    updateProduct: async ({ id, ...product }) => {
+async function updateProduct({ id, ...product }) {
       try {
         if (!id) {
           throw new Error('ERROR: No product id defined');
@@ -88,6 +86,27 @@ module.exports = (config) => {
         console.error(err.message || err);
         throw err;
       }
-    },
+    }
+    
+async function deleteProduct(id) {
+      try {
+        if (!id) {
+          throw new Error('ERROR: No product id defined');
+        } 
+        // await client.query('DELETE FROM products WHERE id = $1', [id]);
+        await client.query('UPDATE products SET deleted_at = $1 WHERE id = $2', [new Date(), id])
+        return true;
+      } catch (err) {
+        console.error(err.message || err);
+        throw err;
+    }
   };
-};
+
+module.exports = {
+  testConnection,
+  close,
+  createProduct,
+  getProduct,
+  updateProduct,
+  deleteProduct,
+}
