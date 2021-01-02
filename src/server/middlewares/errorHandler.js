@@ -6,7 +6,7 @@ function errorHandler(err, req, res, next) {
       res.status(403).json({ error: 'Authorization failed' });
       break;
     default:
-      res.status(500).json({ error: 'Server error' });
+      res.status(500).json({ error: err.message });
       break;
   }
 }
