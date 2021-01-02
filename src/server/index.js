@@ -1,10 +1,12 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const { addAsync } = require('@awaitjs/express');
-const { config } = require('../config');
+// const { db: dbConfig } = require('../config');
 const { router } = require('./router.js');
 const authorizeCheck = require('./middlewares/authorizeCheck');
 const { errorHandler } = require('./middlewares/errorHandler');
+const db = require('../db');
+// const client = new Pool(dbConfig);
 
 // const app = express();
 const app = addAsync(express());
@@ -21,8 +23,20 @@ app.use(errorHandler);
 
 let server;
 
-function start() {
-  server = app.listen(config.port, () => console.log(`server is listening on ${config.port}`));
+async function start() {
+  try {
+    await db.testConnection();
+
+    const product = await db.createProduct({ type: 'socks', color: 'red', price: 3.3 });
+    console.log(`product: ${JSON.stringify(product)}`);
+  } catch (err) {
+    console.error(err.message || err);
+  }
+  await db.testConnection();
+
+  const product = await db.createProduct({ type: 'socks', color: 'red', price: 3.3 });
+  console.log(`product: ${JSON.stringify(product)}`);
+  // server = app.listen(config.port, () => console.log(`server is listening on ${config.port}`));
 }
 
 function stop(callback) {
