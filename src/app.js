@@ -1,10 +1,12 @@
 const server = require('./server');
+const db = require('./db');
 
 function enableGracefulExit() {
-  const exitHandler = (error) => {
+  const exitHandler = async (error) => {
     if (error) console.error(error);
 
     console.log('Gracefully stopping...');
+    await db.close();
     server.stop(() => {
       process.exit();
     });
