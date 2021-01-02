@@ -48,6 +48,10 @@ async function getUploadFileList() {
   const { uploadDir } = config;
 
   try {
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir);
+    }
+
     const files = await fs.promises.readdir(uploadDir);
     const jsonFiles = files.filter((filename) => filename.toLowerCase().endsWith('.json'));
     return { files: jsonFiles };
