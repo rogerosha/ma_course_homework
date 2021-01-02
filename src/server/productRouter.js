@@ -28,6 +28,11 @@ productRouter.deleteAsync('/:id', async (req, res) => {
   res.status(200).json(result);
 });
 
+productRouter.getAsync('/', async (req, res) => {
+  const result = await db.getAllProducts();
+  res.status(200).json(result);
+});
+
 module.exports = {
   productRouter,
 };

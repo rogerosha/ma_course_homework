@@ -116,6 +116,16 @@ async function deleteProduct(id) {
   }
 }
 
+async function getAllProducts() {
+  try {
+    const res = await client.query('SELECT * FROM products WHERE deleted_at IS NULL');
+    return res.rows;
+  } catch (err) {
+    console.error(err.message || err);
+    throw err;
+  }
+}
+
 module.exports = {
   testConnection,
   close,
@@ -123,4 +133,5 @@ module.exports = {
   getProduct,
   updateProduct,
   deleteProduct,
+  getAllProducts,
 };
