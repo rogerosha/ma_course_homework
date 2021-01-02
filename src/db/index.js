@@ -19,7 +19,7 @@ async function close() {
   client.end();
 }
 
-async function createProduct({ type, color, price = 0, quantity = 1 }) {
+async function createNewProduct({ type, color, price = 0, quantity = 1 }) {
   try {
     if (!type) {
       throw new Error('ERROR: No product type defined');
@@ -83,10 +83,23 @@ async function updateProduct({ id, ...product }) {
       values,
     );
     console.log(`DEBUG: Product updated: ${JSON.stringify(res.rows[0])}`);
+    return res.rows[0];
   } catch (err) {
     console.error(err.message || err);
     throw err;
   }
+}
+
+async function createProduct({ type, color, price = 0, quantity = 1 }) {
+  const res = await client.query(
+    'SELECT * FROM products WHERE type = $1 AND color = $2 AND price = $3 AND deleted_at IS NULL',
+    [type, color, price],
+  );
+  const product = res.rows[0];
+  if (product) {
+    return updateProduct({ ...product, quantity: product.quantity + 1 });
+  }
+  return createNewProduct({ type, color, price, quantity });
 }
 
 async function deleteProduct(id) {
