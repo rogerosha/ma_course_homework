@@ -27,7 +27,7 @@ let server;
 async function start() {
   try {
     await db.testConnection();
-
+    await db.createTable();
     // const product = await db.createProduct({ type: 'socks', color: 'red', price: 3.3 });
     // console.log(`product: ${JSON.stringify(product)}`);
   } catch (err) {

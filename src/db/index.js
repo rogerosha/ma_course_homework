@@ -4,6 +4,25 @@ const { config } = require('../config');
 
 const client = new Pool(config.db);
 
+async function createTable() {
+  try {
+    await client.query(`CREATE SEQUENCE IF NOT EXISTS products_id_seq START 1; CREATE TABLE IF NOT EXISTS "public"."products" (
+      "type" character varying(255) NOT NULL,
+      "color" character varying(255) NOT NULL,
+      "quantity" integer NOT NULL,
+      "price" numeric NOT NULL,
+      "created_at" timestamptz,
+      "updated_at" timestamptz,
+      "deleted_at" timestamptz,
+      "id" integer DEFAULT nextval('products_id_seq') NOT NULL
+  ) WITH (oids = false)`);
+    console.log('Table has been created');
+  } catch (err) {
+    console.error(err.message || err);
+    throw err;
+  }
+}
+
 async function testConnection() {
   try {
     console.log('Hello from pg testConnection');
@@ -127,6 +146,7 @@ async function getAllProducts() {
 }
 
 module.exports = {
+  createTable,
   testConnection,
   close,
   createProduct,
