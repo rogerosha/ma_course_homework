@@ -1,5 +1,4 @@
 const { Router } = require('@awaitjs/express');
-
 const {
   task1,
   task2,
@@ -9,7 +8,6 @@ const {
   getUploadFileList,
   optimizeJson,
 } = require('./controller.js');
-const { notFound } = require('./middlewares/errorHandler.js');
 const { csvUploadFile } = require('./csvUploadFile');
 
 const router = Router();
@@ -55,8 +53,6 @@ router.putAsync('/upload/optimize/:fileName', async (req, res) => {
   });
   res.status(202).json({ status: 'okay' });
 });
-
-router.use(notFound);
 
 module.exports = {
   router,
