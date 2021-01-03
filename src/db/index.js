@@ -2,7 +2,6 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable global-require */
-/* eslint-disable no-shadow */
 
 const {
   db: { config, defaultType },
