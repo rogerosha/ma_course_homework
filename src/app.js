@@ -1,5 +1,5 @@
 const server = require('./server');
-const db = require('./db');
+const db = require('./db/pg');
 
 function enableGracefulExit() {
   const exitHandler = async (error) => {

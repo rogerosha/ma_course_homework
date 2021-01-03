@@ -5,7 +5,7 @@ const { config } = require('../config');
 const { router } = require('./router.js');
 const authorizeCheck = require('./middlewares/authorizeCheck');
 const { errorHandler, notFound } = require('./middlewares/errorHandler');
-const db = require('../db');
+const db = require('../db/pg');
 const { productRouter } = require('./productRouter.js');
 
 const app = addAsync(express());
