@@ -11,6 +11,11 @@ const {
 const db = {};
 const type = defaultType;
 
+const funcWrapper = (func) =>
+  typeof func === 'function'
+    ? func
+    : closeProgram(`FATAL: Cannot find ${func.name} function for current DB wrapper`);
+
 async function init() {
   try {
     for (const [key, value] of Object.entries(config)) {
@@ -52,4 +57,12 @@ module.exports = {
   setType,
   getType,
   dbWrapper,
+  //-------------------
+
+  testConnection: async () => funcWrapper(dbWrapper().testConnection)(),
+  close: async () => funcWrapper(dbWrapper().close)(),
+  createProduct: async (product) => funcWrapper(dbWrapper().createProduct)(product),
+  getProduct: async (id) => funcWrapper(dbWrapper().getProduct)(id),
+  updateProduct: async (product) => funcWrapper(dbWrapper().updateProduct)(product),
+  deleteProduct: async (id) => funcWrapper(dbWrapper().deleteProduct)(id),
 };
