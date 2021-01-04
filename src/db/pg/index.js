@@ -3,6 +3,7 @@ const { Pool } = require('pg');
 const { config } = require('../../config');
 
 const client = new Pool(config.db);
+const name = 'pg';
 
 async function createTable() {
   try {
@@ -25,7 +26,7 @@ async function createTable() {
 
 async function testConnection() {
   try {
-    console.log('Hello from pg testConnection');
+    console.log(`Hello from ${name} testConnection`);
     await client.query('SELECT NOW()');
   } catch (err) {
     console.error(err.message || err);
@@ -34,7 +35,7 @@ async function testConnection() {
 }
 
 async function close() {
-  console.log('INFO: Closing pg DB wrapper');
+  console.log(`INFO: Closing ${name} DB wrapper`);
   client.end();
 }
 
