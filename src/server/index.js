@@ -27,14 +27,6 @@ let server;
 async function start() {
   try {
     await db.init();
-
-    console.log(`Now DB type is ${db.getType()}`);
-
-    db.setType('knex');
-
-    console.log(`Now DB type is ${db.getType()}`);
-
-    console.log(db);
     await db.createTable();
   } catch (err) {
     console.error(err.message || err);
