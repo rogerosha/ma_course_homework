@@ -5,7 +5,7 @@ const { config } = require('../config');
 const { router } = require('./router.js');
 const authorizeCheck = require('./middlewares/authorizeCheck');
 const { errorHandler, notFound } = require('./middlewares/errorHandler');
-const db = require('../db/pg');
+const db = require('../db');
 const { productRouter } = require('./productRouter.js');
 
 const app = addAsync(express());
@@ -34,6 +34,7 @@ async function start() {
 
     console.log(`Now DB type is ${db.getType()}`);
 
+    console.log(db);
     await db.createTable();
   } catch (err) {
     console.error(err.message || err);

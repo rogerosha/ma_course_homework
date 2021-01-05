@@ -2,7 +2,7 @@ const { Pool } = require('pg');
 
 const { config } = require('../../config');
 
-const client = new Pool(config.db);
+const client = new Pool(config.db.config.pg);
 const name = 'pg';
 
 async function createTable() {

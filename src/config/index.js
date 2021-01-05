@@ -43,4 +43,5 @@ const user = {
 module.exports = {
   config,
   user,
+  closeProgram,
 };
