@@ -3,13 +3,10 @@
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable global-require */
 
-const {
-  db: { config, defaultType },
-  closeProgram,
-} = require('../config');
+const { config, closeProgram } = require('../config');
 
 const db = {};
-const type = defaultType;
+let type = config.defaultType;
 
 const funcWrapper = (func) =>
   typeof func === 'function'
@@ -18,14 +15,14 @@ const funcWrapper = (func) =>
 
 async function init() {
   try {
-    for (const [key, value] of Object.entries(config)) {
-      const wrapper = require(`./${key}`)(value);
+    for (const [key] of Object.entries(config.db.config)) {
+      const wrapper = require(`./${key}`);
       await wrapper.testConnection();
       console.log(`INFO: DB wrapper for ${key} initiated`);
       db[key] = wrapper;
     }
   } catch (err) {
-    closeProgram(`FATAL: ${err.message || err}`);
+    closeProgram(`FATAL: ${err.message || err}`, err);
   }
 }
 

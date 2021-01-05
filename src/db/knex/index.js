@@ -3,21 +3,22 @@ const Knex = require('knex');
 const { config } = require('../../config');
 
 const name = 'knex';
-const knex = new Knex(config);
+/**
+ * @type Knex
+ */
+const knex = new Knex(config.db.config.knex);
 
 async function createTable() {
   try {
-    await knex.raw(`CREATE SEQUENCE IF NOT EXISTS products_id_seq START 1; CREATE TABLE IF NOT EXISTS "public"."products" (
-      "type" character varying(255) NOT NULL,
-      "color" character varying(255) NOT NULL,
-      "quantity" integer NOT NULL,
-      "price" numeric NOT NULL,
-      "created_at" timestamptz,
-      "updated_at" timestamptz,
-      "deleted_at" timestamptz,
-      "id" integer DEFAULT nextval('products_id_seq') NOT NULL
-  ) WITH (oids = false)`);
-    console.log('Table has been created');
+    await knex.schema.createTable('products', (table) => {
+      table.increments();
+      table.string('type').notNullable();
+      table.string('color').notNullable();
+      table.integer('quantity').notNullable();
+      table.decimal('price').notNullable();
+      table.timestamps();
+    });
+    console.log('The table has been created');
   } catch (err) {
     console.error(err.message || err);
     throw err;
@@ -90,7 +91,7 @@ async function updateProduct({ id, ...product }) {
       throw new Error('ERROR: Nothing to update');
     }
     const p = JSON.parse(JSON.stringify(product));
-    const res = knex('products').update(p).where('id', id).returning('*');
+    const res = await knex('products').update(p).where('id', id).returning('*');
     console.log(`DEBUG: Product updated: ${JSON.stringify(res[0])}`);
     return res[0];
   } catch (err) {
@@ -99,16 +100,19 @@ async function updateProduct({ id, ...product }) {
   }
 }
 
-async function createProduct({ type, color, price = 0, quantity = 1 }) {
-  const res = await knex.raw(
-    'SELECT * FROM products WHERE type = $1 AND color = $2 AND price = $3 AND deleted_at IS NULL',
-    [type, color, price],
-  );
-  const product = res.rows[0];
+async function createProduct(requestProduct) {
+  const res = await knex('products')
+    .where({
+      type: requestProduct.type,
+      color: requestProduct.color,
+      price: requestProduct.price,
+    })
+    .whereNull('deleted_at');
+  const product = res[0];
   if (product) {
     return updateProduct({ ...product, quantity: product.quantity + 1 });
   }
-  return createNewProduct({ type, color, price, quantity });
+  return createNewProduct(requestProduct);
 }
 
 async function deleteProduct(id) {
@@ -128,8 +132,8 @@ async function deleteProduct(id) {
 
 async function getAllProducts() {
   try {
-    const res = await knex.raw('SELECT * FROM products WHERE deleted_at IS NULL');
-    return res.rows;
+    const res = await knex('products').whereNull('deleted_at');
+    return res;
   } catch (err) {
     console.error(err.message || err);
     throw err;
