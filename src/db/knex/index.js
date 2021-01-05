@@ -10,16 +10,21 @@ const knex = new Knex(config.db.config.knex);
 
 async function createTable() {
   try {
-    await knex.schema.createTable('products', (table) => {
-      table.increments();
-      table.string('type').notNullable();
-      table.string('color').notNullable();
-      table.integer('quantity').notNullable();
-      table.decimal('price').notNullable();
-      table.timestamps(false, true);
-      table.timestamp('deleted_at');
-    });
-    console.log('The table has been created');
+    const isTableExists = await knex.schema.hasTable('products');
+    if (isTableExists) {
+      console.log('The table is already created');
+    } else {
+      await knex.schema.createTableIfNotExists('products', (table) => {
+        table.increments();
+        table.string('type').notNullable();
+        table.string('color').notNullable();
+        table.integer('quantity').notNullable();
+        table.decimal('price').notNullable();
+        table.timestamps(false, true);
+        table.timestamp('deleted_at');
+      });
+      console.log('The table has been created');
+    }
   } catch (err) {
     console.error(err.message || err);
     throw err;
