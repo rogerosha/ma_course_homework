@@ -6,7 +6,7 @@ function enableGracefulExit() {
     if (error) console.error(error);
 
     console.log('Gracefully stopping...');
-    await db.close();
+    await db.end();
     server.stop(() => {
       process.exit();
     });

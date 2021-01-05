@@ -26,10 +26,15 @@ let server;
 
 async function start() {
   try {
-    await db.testConnection();
+    await db.init();
+
+    console.log(`Now DB type is ${db.getType()}`);
+
+    db.setType('knex');
+
+    console.log(`Now DB type is ${db.getType()}`);
+
     await db.createTable();
-    // const product = await db.createProduct({ type: 'socks', color: 'red', price: 3.3 });
-    // console.log(`product: ${JSON.stringify(product)}`);
   } catch (err) {
     console.error(err.message || err);
   }
