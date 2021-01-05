@@ -1,6 +1,7 @@
 module.exports = {
-  closeProgram: (message) => {
+  closeProgram: (message, err) => {
     console.error(message);
+    console.error(err);
     process.exit(1);
   },
 };
