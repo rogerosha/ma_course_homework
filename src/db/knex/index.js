@@ -16,7 +16,8 @@ async function createTable() {
       table.string('color').notNullable();
       table.integer('quantity').notNullable();
       table.decimal('price').notNullable();
-      table.timestamps();
+      table.timestamps(false, true);
+      table.timestamp('deleted_at');
     });
     console.log('The table has been created');
   } catch (err) {
