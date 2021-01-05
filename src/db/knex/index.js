@@ -1,9 +1,8 @@
 const Knex = require('knex');
 
 const { config } = require('../../config');
-const { ProductsTable } = require('./products');
+const { ProductsTable } = require('./tables');
 
-const name = 'knex';
 /**
  * @type Knex - Knex client
  */
@@ -11,7 +10,7 @@ const knex = new Knex(config.db.config.knex);
 
 async function testConnection() {
   try {
-    console.log(`Hello from ${name} testConnection`);
+    console.log(`Hello from knex testConnection`);
     await knex.raw('SELECT NOW()');
   } catch (err) {
     console.error(err.message || err);
