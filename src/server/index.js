@@ -27,7 +27,7 @@ let server;
 async function start() {
   try {
     await db.init();
-    await db.createTable();
+    await db.productsTable.createTable();
   } catch (err) {
     console.error(err.message || err);
   }

@@ -9,13 +9,7 @@ async function init() {
   }
 }
 
-async function end() {
-  await knexDb.close();
-  console.log(`INFO: DB wrapper for knex was closed`);
-}
-
 module.exports = {
   init,
-  end,
   ...knexDb,
 };
