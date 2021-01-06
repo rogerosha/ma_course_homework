@@ -1,6 +1,7 @@
 const Knex = require('knex');
 
 const { config } = require('../../config');
+const { CsvAdapter } = require('../csvAdapter');
 const { ColorsTable, TypesTable, ProductsTable } = require('./tables');
 
 /**
@@ -21,10 +22,12 @@ async function testConnection() {
 const colorsTable = new ColorsTable(knex);
 const typesTable = new TypesTable(knex);
 const productsTable = new ProductsTable(knex, colorsTable, typesTable);
+const csvAdapter = new CsvAdapter(productsTable, colorsTable, typesTable);
 
 module.exports = {
   testConnection,
   colorsTable,
   typesTable,
   productsTable,
+  csvAdapter,
 };
