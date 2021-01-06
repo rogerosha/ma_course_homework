@@ -1,7 +1,7 @@
 const Knex = require('knex');
 
 const { config } = require('../../config');
-const { ColorsTable, ProductsTable } = require('./tables');
+const { ColorsTable, TypesTable, ProductsTable } = require('./tables');
 
 /**
  * @type Knex - Knex client
@@ -19,10 +19,12 @@ async function testConnection() {
 }
 
 const colorsTable = new ColorsTable(knex);
-const productsTable = new ProductsTable(knex, colorsTable);
+const typesTable = new TypesTable(knex);
+const productsTable = new ProductsTable(knex, colorsTable, typesTable);
 
 module.exports = {
   testConnection,
   colorsTable,
+  typesTable,
   productsTable,
 };

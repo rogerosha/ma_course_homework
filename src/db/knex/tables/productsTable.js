@@ -2,15 +2,18 @@
 const { request } = require('express');
 const Knex = require('knex');
 const { ColorsTable } = require('./colorsTable');
+const { TypesTable } = require('./typesTable');
 
 class ProductsTable {
   /**
    * @param {Knex} knex - Knex client
    * @param {ColorsTable} colorsTable
+   * @param {TypesTable} typesTable
    */
-  constructor(knex, colorsTable) {
+  constructor(knex, colorsTable, typesTable) {
     this.knex = knex;
     this.colorsTable = colorsTable;
+    this.typesTable = typesTable;
 
     this.TABLE_NAME = 'products';
 
@@ -27,11 +30,10 @@ class ProductsTable {
     } else {
       await this.knex.schema.createTable(this.TABLE_NAME, (table) => {
         table.increments();
+        table.integer('type_id').references('id').inTable('types').notNullable();
         table.integer('color_id').references('id').inTable('colors').notNullable();
+        table.unique(['color_id', 'type_id']);
         table.decimal('price').notNullable().defaultTo(this.DEFAULT_PRODUCT.price);
-        table.unique(['color_id']);
-
-        table.string('type').notNullable();
         table.integer('quantity').notNullable().defaultTo(this.DEFAULT_PRODUCT.quantity);
         table.timestamps(false, true);
         table.timestamp('deleted_at');
@@ -45,20 +47,27 @@ class ProductsTable {
   async createProduct(requestProduct) {
     const colorId = await this.colorsTable.getColorIdByColor(requestProduct.color);
 
+    const typeId = await this.typesTable.getTypeIdByType(requestProduct.type);
+
     if (!colorId) {
       throw new Error('No such color_id in the colors table. Please, create the color first');
+    }
+    if (!typeId) {
+      throw new Error('No such type_id in the types table. Please, create the type first');
     }
 
     const productCopy = JSON.parse(JSON.stringify(requestProduct));
     delete productCopy.id;
     delete productCopy.color;
+    delete productCopy.type;
     productCopy.quantity = productCopy.quantity || 1;
     productCopy.color_id = colorId;
+    productCopy.type_id = typeId;
 
     const [createdProduct] = await this.knex(this.TABLE_NAME)
       .insert(productCopy)
       .returning('*')
-      .onConflict(['color_id'])
+      .onConflict(['color_id', 'type_id'])
       .merge({ quantity: this.knex.raw(`products.quantity + ${productCopy.quantity}`) })
       .returning('*');
 
@@ -79,6 +88,9 @@ class ProductsTable {
       switch (key) {
         case 'color':
           updateProduct.color_id = (await this.colorsTable.createColor(product.color)).id;
+          break;
+        case 'type':
+          updateProduct.type_id = (await this.typesTable.createType(product.type)).id;
           break;
 
         default:
@@ -116,8 +128,14 @@ class ProductsTable {
           this.colorsTable.TABLE_NAME,
           `${this.TABLE_NAME}.color_id`,
           `${this.colorsTable.TABLE_NAME}.id`,
+        )
+        .join(
+          this.typesTable.TABLE_NAME,
+          `${this.TABLE_NAME}.type_id`,
+          `${this.typesTable.TABLE_NAME}.id`,
         );
       // .select(`${this.colorsTable.TABLE_NAME}.value`);
+      // .select(`${this.typesTable.TABLE_NAME}.value`);
 
       return foundProduct;
     } catch (err) {
@@ -150,7 +168,13 @@ class ProductsTable {
           `${this.TABLE_NAME}.color_id`,
           `${this.colorsTable.TABLE_NAME}.id`,
         )
-        .select(`${this.colorsTable.TABLE_NAME}.value`);
+        .join(
+          this.typesTable.TABLE_NAME,
+          `${this.TABLE_NAME}.type_id`,
+          `${this.typesTable.TABLE_NAME}.id`,
+        )
+        .select(`${this.colorsTable.TABLE_NAME}.value`)
+        .select(`${this.typesTable.TABLE_NAME}.value`);
       return foundProducts;
     } catch (err) {
       console.error(err.message || err);

@@ -8,6 +8,7 @@ const { errorHandler, notFound } = require('./middlewares/errorHandler');
 const db = require('../db');
 const { productRouter } = require('./productRouter');
 const { colorRouter } = require('./colorRouter');
+const { typeRouter } = require('./typeRouter');
 
 const app = addAsync(express());
 
@@ -21,6 +22,7 @@ app.use(
 app.use('/', authorizeCheck, router);
 app.use('/products/', authorizeCheck, productRouter);
 app.use('/colors/', authorizeCheck, colorRouter);
+app.use('/types/', authorizeCheck, typeRouter);
 app.use(notFound);
 app.use(errorHandler);
 
@@ -30,6 +32,7 @@ async function start() {
   try {
     await db.init();
     await db.colorsTable.createTable();
+    await db.typesTable.createTable();
     await db.productsTable.createTable();
   } catch (err) {
     console.error(err);
