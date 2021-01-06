@@ -24,7 +24,7 @@ class CsvAdapter {
     });
 
     await Promise.all(requests);
-    console.log(`Database filled with ${json.length} products!`);
+    console.log(new Date(), `DEBUG: Database filled with ${json.length} products!`);
   }
 }
 

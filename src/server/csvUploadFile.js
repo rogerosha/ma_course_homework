@@ -41,8 +41,8 @@ async function csvUploadFile(inputStream) {
 }
 
 function readFile(fileName) {
-  const { uploadDir } = config;
-  const filePath = `${uploadDir}/${fileName}`;
+  const { optimizedDir } = config;
+  const filePath = `${optimizedDir}/${fileName}`;
   return fs.promises
     .readFile(filePath)
     .then((buffer) => buffer.toString())

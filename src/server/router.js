@@ -32,10 +32,15 @@ router.getAsync('/upload', async (req, res) => {
 
 router.postAsync('/upload/csv', async (req, res) => {
   try {
+    console.log(new Date(), 'DEBUG: Uploading the file...');
     const fileName = await csvUploadFile(req);
+    console.log(new Date(), 'DEBUG: Optimizing the file...');
+    await optimizeJson(fileName);
+    console.log(new Date(), 'DEBUG: Reading the file...');
     const fileJson = await readFile(fileName);
+    console.log(new Date(), 'DEBUG: Filling the db...');
     await csvAdapter.fillDatabaseFromJSON(fileJson);
-    res.status(201).json({ status: 'your file uploaded', fileName });
+    res.status(201).json({ status: 'Your file optimized and sent to DB', fileName });
   } catch (err) {
     console.error('Failed to upload csv', err);
     res.status(500).json({ status: err.message });
