@@ -1,4 +1,5 @@
 const { Router } = require('@awaitjs/express');
+const { csvAdapter } = require('../db');
 const {
   task1,
   task2,
@@ -8,7 +9,7 @@ const {
   getUploadFileList,
   optimizeJson,
 } = require('./controller.js');
-const { csvUploadFile } = require('./csvUploadFile');
+const { csvUploadFile, readFile } = require('./csvUploadFile');
 
 const router = Router();
 
@@ -32,6 +33,8 @@ router.getAsync('/upload', async (req, res) => {
 router.postAsync('/upload/csv', async (req, res) => {
   try {
     const fileName = await csvUploadFile(req);
+    const fileJson = await readFile(fileName);
+    await csvAdapter.fillDatabaseFromJSON(fileJson);
     res.status(201).json({ status: 'your file uploaded', fileName });
   } catch (err) {
     console.error('Failed to upload csv', err);
