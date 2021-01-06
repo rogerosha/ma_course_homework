@@ -1,5 +1,4 @@
 /* eslint-disable no-unused-vars */
-const { request } = require('express');
 const Knex = require('knex');
 const { ColorsTable } = require('./colorsTable');
 const { TypesTable } = require('./typesTable');
@@ -60,13 +59,14 @@ class ProductsTable {
       throw new Error('No such type_id in the types table. Please, create the type first');
     }
 
-    const productCopy = JSON.parse(JSON.stringify(requestProduct));
-    delete productCopy.id;
-    delete productCopy.color;
-    delete productCopy.type;
-    productCopy.quantity = productCopy.quantity || 1;
-    productCopy.color_id = colorId;
-    productCopy.type_id = typeId;
+    const productCopy = JSON.parse(
+      JSON.stringify({
+        quantity: requestProduct.quantity || 1,
+        color_id: colorId,
+        type_id: typeId,
+        price: requestProduct.price,
+      }),
+    );
 
     const [createdProduct] = await this.knex(this.TABLE_NAME)
       .insert(productCopy)
