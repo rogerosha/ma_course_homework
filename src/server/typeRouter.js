@@ -13,6 +13,11 @@ typeRouter.getAsync('/:id', async (req, res) => {
   res.status(200).json(result);
 });
 
+typeRouter.getAsync('/', async (req, res) => {
+  const result = await db.typesTable.getAllTypes();
+  res.status(200).json(result);
+});
+
 typeRouter.putAsync('/:id', async (req, res) => {
   const result = await db.typesTable.updateType(+req.params.id, req.body);
   res.status(200).json(result);
