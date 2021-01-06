@@ -35,8 +35,8 @@ class ProductsTable {
           .references('id')
           .inTable(this.colorsTable.TABLE_NAME)
           .notNullable();
-        table.unique(['color_id', 'type_id']);
         table.decimal('price').notNullable().defaultTo(this.DEFAULT_PRODUCT.price);
+        table.unique(['color_id', 'type_id', 'price']);
         table.integer('quantity').notNullable().defaultTo(this.DEFAULT_PRODUCT.quantity);
         table.timestamps(false, true);
         table.timestamp('deleted_at');
@@ -49,12 +49,12 @@ class ProductsTable {
 
   async createProduct(requestProduct) {
     const colorId = await this.colorsTable.getColorIdByColor(requestProduct.color);
-
     const typeId = await this.typesTable.getTypeIdByType(requestProduct.type);
 
     if (!colorId) {
       throw new Error('No such color_id in the colors table. Please, create the color first');
     }
+
     if (!typeId) {
       throw new Error('No such type_id in the types table. Please, create the type first');
     }
@@ -64,18 +64,18 @@ class ProductsTable {
         quantity: requestProduct.quantity || 1,
         color_id: colorId,
         type_id: typeId,
-        price: requestProduct.price,
+        price: requestProduct.price || this.DEFAULT_PRODUCT.price,
       }),
     );
 
-    const [createdProduct] = await this.knex(this.TABLE_NAME)
+    const [createdProductId] = await this.knex(this.TABLE_NAME)
       .insert(productCopy)
       .returning('*')
-      .onConflict(['color_id', 'type_id'])
+      .onConflict(['color_id', 'type_id', 'price'])
       .merge({ quantity: this.knex.raw(`products.quantity + ${productCopy.quantity}`) })
-      .returning('*');
+      .returning('id');
 
-    return createdProduct;
+    return this.getProduct(createdProductId);
   }
 
   async updateProduct({ id, ...product }) {
@@ -93,6 +93,7 @@ class ProductsTable {
         case 'color':
           updateProduct.color_id = (await this.colorsTable.createColor(product.color)).id;
           break;
+
         case 'type':
           updateProduct.type_id = (await this.typesTable.createType(product.type)).id;
           break;
@@ -108,15 +109,8 @@ class ProductsTable {
     await Promise.all(updateRequests);
     updateProduct.updated_at = new Date();
 
-    console.log({ id, updateProduct });
-
-    const [updatedProduct] = await this.knex(this.TABLE_NAME)
-      .update(updateProduct)
-      .where({ id })
-      .returning('*');
-
-    console.log(`DEBUG: Product updated: ${JSON.stringify(updatedProduct)}`);
-    return updatedProduct;
+    await this.knex(this.TABLE_NAME).update(updateProduct).where({ id });
+    return this.getProduct(id);
   }
 
   async getProduct(id) {
@@ -125,21 +119,9 @@ class ProductsTable {
         throw new Error('ERROR: No product id defined');
       }
 
-      const [foundProduct] = await this.knex(this.TABLE_NAME)
-        .where(`${this.TABLE_NAME}.id`, id)
-        .whereNull('deleted_at')
-        .join(
-          this.colorsTable.TABLE_NAME,
-          `${this.TABLE_NAME}.color_id`,
-          `${this.colorsTable.TABLE_NAME}.id`,
-        )
-        .join(
-          this.typesTable.TABLE_NAME,
-          `${this.TABLE_NAME}.type_id`,
-          `${this.typesTable.TABLE_NAME}.id`,
-        );
-      // .select(`${this.colorsTable.TABLE_NAME}.value`);
-      // .select(`${this.typesTable.TABLE_NAME}.value`);
+      const [foundProduct] = await this.buildJoin(
+        this.knex(this.TABLE_NAME).where(`${this.TABLE_NAME}.id`, id),
+      );
 
       return foundProduct;
     } catch (err) {
@@ -165,25 +147,41 @@ class ProductsTable {
 
   async getAllProducts() {
     try {
-      const foundProducts = await this.knex(this.TABLE_NAME)
-        .whereNull('deleted_at')
-        .join(
-          this.colorsTable.TABLE_NAME,
-          `${this.TABLE_NAME}.color_id`,
-          `${this.colorsTable.TABLE_NAME}.id`,
-        )
-        .join(
-          this.typesTable.TABLE_NAME,
-          `${this.TABLE_NAME}.type_id`,
-          `${this.typesTable.TABLE_NAME}.id`,
-        )
-        .select(`${this.colorsTable.TABLE_NAME}.value`)
-        .select(`${this.typesTable.TABLE_NAME}.value`);
-      return foundProducts;
+      return await this.buildJoin(this.knex(this.TABLE_NAME));
     } catch (err) {
       console.error(err.message || err);
       throw err;
     }
+  }
+
+  /**
+   * @private
+   * @param {Knex.QueryBuilder} knexRequest - initial request
+   *
+   * @returns {Knex.QueryBuilder}
+   */
+  buildJoin(knexRequest) {
+    return knexRequest
+      .where(`${this.TABLE_NAME}.deleted_at`, null)
+      .join(
+        this.colorsTable.TABLE_NAME,
+        `${this.TABLE_NAME}.color_id`,
+        `${this.colorsTable.TABLE_NAME}.id`,
+      )
+      .join(
+        this.typesTable.TABLE_NAME,
+        `${this.TABLE_NAME}.type_id`,
+        `${this.typesTable.TABLE_NAME}.id`,
+      )
+      .select(
+        `${this.TABLE_NAME}.id`,
+        `${this.typesTable.TABLE_NAME}.type`,
+        `${this.colorsTable.TABLE_NAME}.color`,
+        `${this.TABLE_NAME}.price`,
+        `${this.TABLE_NAME}.quantity`,
+        `${this.TABLE_NAME}.created_at`,
+        `${this.TABLE_NAME}.updated_at`,
+      );
   }
 }
 
