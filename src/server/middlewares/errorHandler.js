@@ -1,6 +1,6 @@
 // eslint-disable-next-line no-unused-vars
 function errorHandler(err, req, res, next) {
-  console.error(err.message);
+  console.error(err);
   switch (err.message) {
     case 'Authorize':
       res.status(403).json({ error: 'Authorization failed' });
@@ -13,7 +13,7 @@ function errorHandler(err, req, res, next) {
 
 function notFound(req, res, next) {
   if (!req.route) {
-    res.status(404).json({ status: 'not found' });
+    res.status(404).json({ status: 'Route Not Found' });
   }
   return next();
 }
