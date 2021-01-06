@@ -40,6 +40,16 @@ async function csvUploadFile(inputStream) {
   return fileName;
 }
 
+function readFile(fileName) {
+  const { uploadDir } = config;
+  const filePath = `${uploadDir}/${fileName}`;
+  return fs.promises
+    .readFile(filePath)
+    .then((buffer) => buffer.toString())
+    .then(JSON.parse);
+}
+
 module.exports = {
   csvUploadFile,
+  readFile,
 };
