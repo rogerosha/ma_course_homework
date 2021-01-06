@@ -49,7 +49,7 @@ class TypesTable {
       .then(([typeItem]) => (typeItem ? typeItem.id : null));
   }
 
-  getAllType() {
+  getAllTypes() {
     return this.knex(this.TABLE_NAME).whereNull('deleted_at');
   }
 
