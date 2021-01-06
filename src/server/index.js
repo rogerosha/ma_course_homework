@@ -6,7 +6,8 @@ const { router } = require('./router.js');
 const authorizeCheck = require('./middlewares/authorizeCheck');
 const { errorHandler, notFound } = require('./middlewares/errorHandler');
 const db = require('../db');
-const { productRouter } = require('./productRouter.js');
+const { productRouter } = require('./productRouter');
+const { colorRouter } = require('./colorRouter');
 
 const app = addAsync(express());
 
@@ -19,6 +20,7 @@ app.use(
 
 app.use('/', authorizeCheck, router);
 app.use('/products/', authorizeCheck, productRouter);
+app.use('/colors/', authorizeCheck, colorRouter);
 app.use(notFound);
 app.use(errorHandler);
 
@@ -27,9 +29,10 @@ let server;
 async function start() {
   try {
     await db.init();
+    await db.colorsTable.createTable();
     await db.productsTable.createTable();
   } catch (err) {
-    console.error(err.message || err);
+    console.error(err);
   }
 
   server = app.listen(config.port, () => console.log(`server is listening on ${config.port}`));
