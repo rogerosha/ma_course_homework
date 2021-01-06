@@ -21,7 +21,7 @@ const config = {
           min: 2,
           max: 10,
         },
-        debug: true,
+        debug: process.env.KNEX_DEBUG === 'true',
       },
     },
   },
