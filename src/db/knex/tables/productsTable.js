@@ -30,8 +30,12 @@ class ProductsTable {
     } else {
       await this.knex.schema.createTable(this.TABLE_NAME, (table) => {
         table.increments();
-        table.integer('type_id').references('id').inTable('types').notNullable();
-        table.integer('color_id').references('id').inTable('colors').notNullable();
+        table.integer('type_id').references('id').inTable(this.typesTable.TABLE_NAME).notNullable();
+        table
+          .integer('color_id')
+          .references('id')
+          .inTable(this.colorsTable.TABLE_NAME)
+          .notNullable();
         table.unique(['color_id', 'type_id']);
         table.decimal('price').notNullable().defaultTo(this.DEFAULT_PRODUCT.price);
         table.integer('quantity').notNullable().defaultTo(this.DEFAULT_PRODUCT.quantity);
