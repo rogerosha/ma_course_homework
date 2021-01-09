@@ -10,21 +10,6 @@ class TypesTable {
     this.TABLE_NAME = 'types';
   }
 
-  async createTable() {
-    const isTableExists = await this.knex.schema.hasTable(this.TABLE_NAME);
-    if (isTableExists) {
-      console.log(`Table ${this.TABLE_NAME} is already created`);
-    } else {
-      await this.knex.schema.createTable(this.TABLE_NAME, (table) => {
-        table.increments();
-        table.string('type').notNullable().unique();
-        table.timestamps(false, true);
-        table.timestamp('deleted_at');
-      });
-      console.log(`Table ${this.TABLE_NAME} has been created`);
-    }
-  }
-
   createType(type) {
     return this.knex(this.TABLE_NAME)
       .insert({ type })

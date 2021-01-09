@@ -31,9 +31,6 @@ let server;
 async function start() {
   try {
     await db.init();
-    await db.colorsTable.createTable();
-    await db.typesTable.createTable();
-    await db.productsTable.createTable();
   } catch (err) {
     console.error(err);
   }

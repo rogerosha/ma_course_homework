@@ -22,31 +22,6 @@ class ProductsTable {
     };
   }
 
-  async createTable() {
-    const isTableExists = await this.knex.schema.hasTable(this.TABLE_NAME);
-    if (isTableExists) {
-      console.log(`Table ${this.TABLE_NAME} is already created`);
-    } else {
-      await this.knex.schema.createTable(this.TABLE_NAME, (table) => {
-        table.increments();
-        table.integer('type_id').references('id').inTable(this.typesTable.TABLE_NAME).notNullable();
-        table
-          .integer('color_id')
-          .references('id')
-          .inTable(this.colorsTable.TABLE_NAME)
-          .notNullable();
-        table.decimal('price').notNullable().defaultTo(this.DEFAULT_PRODUCT.price);
-        table.unique(['color_id', 'type_id', 'price']);
-        table.integer('quantity').notNullable().defaultTo(this.DEFAULT_PRODUCT.quantity);
-        table.timestamps(false, true);
-        table.timestamp('deleted_at');
-      });
-      console.log(`Table ${this.TABLE_NAME} has been created`);
-    }
-  }
-
-  // Requests
-
   async createProduct(requestProduct) {
     const colorId = await this.colorsTable.getColorIdByColor(requestProduct.color);
     const typeId = await this.typesTable.getTypeIdByType(requestProduct.type);
