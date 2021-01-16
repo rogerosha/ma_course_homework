@@ -1,5 +1,5 @@
 const { Router } = require('@awaitjs/express');
-const db = require('../db');
+const db = require('../../db');
 
 const colorRouter = Router();
 

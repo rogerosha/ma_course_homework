@@ -1,5 +1,5 @@
 const { Router } = require('@awaitjs/express');
-const { csvAdapter } = require('../db');
+const { csvAdapter } = require('../../db');
 const {
   task1,
   task2,
@@ -8,8 +8,8 @@ const {
   switchStore,
   getUploadFileList,
   optimizeJson,
-} = require('./controller.js');
-const { csvUploadFile, readFile } = require('./csvUploadFile');
+} = require('../controller.js');
+const { csvUploadFile, readFile } = require('../csvUploadFile');
 
 const router = Router();
 
