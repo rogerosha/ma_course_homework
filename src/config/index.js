@@ -5,6 +5,12 @@ const config = {
   port: Number(process.env.PORT) || 3000,
   uploadDir: process.env.UPLOAD_DIR || closeProgram('No upload dir'),
   optimizedDir: process.env.OPTIMIZED_DIR || closeProgram('No optimized dir'),
+  hash_secret: process.env.HASH_SECRET || closeProgram('HASH_SECRET is required'),
+  refresh_token_key: process.env.REFRESH_TOKEN_KEY || closeProgram('REFRESH_TOKEN_KEY is required'),
+  refresh_token_life:
+    process.env.REFRESH_TOKEN_LIFE || closeProgram('REFRESH_TOKEN_LIFE is required'),
+  access_token_key: process.env.ACCESS_TOKEN_KEY || closeProgram('ACCESS_TOKEN_KEY is required'),
+  access_token_life: process.env.ACCESS_TOKEN_LIFE || closeProgram('ACCESS_TOKEN_LIFE is required'),
 
   db: {
     config: {
