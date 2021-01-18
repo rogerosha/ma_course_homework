@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 const Knex = require('knex');
-const { CryptoService } = require('../../../services');
+const { CryptoService } = require('../../../services/cryptoService');
 
 class AdminsTable {
   /**
@@ -27,20 +27,20 @@ class AdminsTable {
     return this.knex(this.TABLE_NAME).where({ username }).select('refresh-token').first();
   }
 
-  updateAdminRefreshToken({ username, hash, refreshToken }) {
-    return (
-      this.knex(this.TABLE_NAME)
-        // eslint-disable-next-line consistent-return
-        .where((builder) => {
-          if (username) {
-            return builder.where({ username });
-          }
-          if (hash) {
-            return builder.where({ hash });
-          }
-        })
-        .update({ 'refresh-token': refreshToken, updated_at: new Date() })
-    );
+  async updateAdminRefreshToken({ username, hash, refreshToken }) {
+    return !!(await this.knex(this.TABLE_NAME)
+      .where((builder) => {
+        if (username) {
+          return builder.where({ username });
+        }
+
+        if (hash) {
+          return builder.where({ hash });
+        }
+
+        return builder;
+      })
+      .update({ 'refresh-token': refreshToken, updated_at: new Date() }));
   }
 
   deleteAdminRefreshToken(username) {

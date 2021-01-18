@@ -39,6 +39,7 @@ class AuthorizationService {
   getAuthToken(req) {
     const header = req.headers.authorization || '';
     const token = header.split(/\s+/).pop() || '';
+
     return token;
   }
 

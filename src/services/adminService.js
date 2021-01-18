@@ -16,10 +16,18 @@ class AdminService {
   }
 
   async login(username, password) {
-    const tokens = await this.authorizationService.generateAllTokens({ username });
+    const newTokens = await this.authorizationService.generateAllTokens({ username });
     const hash = this.cryptoService.createHash(username, password);
-    await this.adminsTable.updateAdminRefreshToken({ hash, refreshToken: tokens.refreshToken });
-    return tokens;
+    const isUpdated = await this.adminsTable.updateAdminRefreshToken({
+      hash,
+      refreshToken: newTokens.refreshToken,
+    });
+
+    if (!isUpdated) {
+      throw new Error('Wrong username or password');
+    }
+
+    return newTokens;
   }
 
   async refreshToken(token) {
@@ -32,10 +40,6 @@ class AdminService {
       throw new Error('There is no token for this admin');
     }
 
-    if (dbAdminToken !== newTokens.refreshToken) {
-      throw new Error('Incorrect username or password');
-    }
-
     await this.adminsTable.updateAdminRefreshToken({
       username,
       refreshToken: newTokens.refreshToken,
@@ -46,15 +50,12 @@ class AdminService {
 
   async logout(token) {
     const username = await this.getUsernameFromToken(token);
-    const checkOut = await this.adminsTable.deleteAdminRefreshToken({ username });
-    return { status: checkOut === null };
+    const status = await this.adminsTable.deleteAdminRefreshToken(username);
+    return { status };
   }
 
-  /**
-   * @private
-   */
   async getUsernameFromToken(refreshToken) {
-    const { username } = await this.authorizationService.checkRefreshToken(refreshToken);
+    const { username } = await this.authorizationService.checkAccessToken(refreshToken);
 
     if (!username) {
       throw new Error('Incorrect token');

@@ -12,6 +12,9 @@ class CryptoService {
   }
 }
 
+const cryptoService = new CryptoService();
+
 module.exports = {
   CryptoService,
+  cryptoService,
 };

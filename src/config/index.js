@@ -33,13 +33,7 @@ const config = {
   },
 };
 
-const user = {
-  name: process.env.USER_NAME || closeProgram('Invalid name'),
-  password: process.env.PASSWORD || closeProgram('Invalid password'),
-};
-
 module.exports = {
   config,
-  user,
   closeProgram,
 };

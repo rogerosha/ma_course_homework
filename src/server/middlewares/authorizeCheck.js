@@ -1,20 +1,30 @@
-const { user } = require('../../config');
+const { authorizationService } = require('../../services');
+const { adminService } = require('../../services');
+const { adminsTable } = require('../../db');
 
-module.exports = (req, res, next) => {
+module.exports = async (req, res, next) => {
   try {
-    const header = req.headers.authorization || '';
-    const token = header.split(/\s+/).pop() || '';
-    const auth = Buffer.from(token, 'base64').toString();
-    const parts = auth.split(/:/);
-    const authUsername = parts[0] || '';
-    const authPassword = parts[1] || '';
+    const token = await authorizationService.getAuthToken(req);
 
-    if (authUsername === user.name && authPassword === user.password) {
-      next();
-    } else {
-      throw new Error('Authorize');
+    if (!token) {
+      throw new Error('Failed to get authorization token!');
     }
-  } catch (error) {
-    throw new Error('Authorize');
+
+    const checkToken = await authorizationService.checkAccessToken(token);
+
+    if (!checkToken) {
+      throw new Error('Failed to check access token!');
+    }
+
+    const username = await adminService.getUsernameFromToken(token);
+    const dbAdminToken = await adminsTable.getAdminRefreshToken(username);
+
+    if (!dbAdminToken) {
+      throw new Error('Failed to get refresh token!');
+    }
+
+    return next();
+  } catch (err) {
+    return next(err);
   }
 };
