@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "node ./src/app.js",
-    "debug": "nodemon ./src/app.js"
+    "debug": "nodemon ./src/app.js",
+    "db:hard-reset": "knex migrate:rollback && knex migrate:latest && knex seed:run"  
   },
   "repository": {
     "type": "git",
