@@ -2,13 +2,14 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const { addAsync } = require('@awaitjs/express');
 const { config } = require('../config');
-const { router } = require('./router.js');
+const { router } = require('./routes/router.js');
 const authorizeCheck = require('./middlewares/authorizeCheck');
 const { errorHandler, notFound } = require('./middlewares/errorHandler');
 const db = require('../db');
-const { productRouter } = require('./productRouter');
-const { colorRouter } = require('./colorRouter');
-const { typeRouter } = require('./typeRouter');
+const { loginRouter } = require('./routes/loginRouter');
+const { productRouter } = require('./routes/productRouter');
+const { colorRouter } = require('./routes/colorRouter');
+const { typeRouter } = require('./routes/typeRouter');
 
 const app = addAsync(express());
 
@@ -18,6 +19,8 @@ app.use(
     extended: true,
   }),
 );
+
+app.use('/', loginRouter);
 
 app.use('/', authorizeCheck, router);
 app.use('/products/', authorizeCheck, productRouter);

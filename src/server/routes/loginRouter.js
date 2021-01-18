@@ -1,23 +1,29 @@
+/* eslint-disable no-unused-vars */
 const { Router } = require('@awaitjs/express');
 
 const { user } = require('../../config/index');
-const { generateAccessToken } = require('../middlewares/index');
+
+const { adminService } = require('../../services');
+const { authorizationService } = require('../../services');
 
 const loginRouter = Router();
 
-loginRouter.post('/login', (req, res, next) => {
-  try {
-    const { username, password } = req.body;
-    console.log({ username, password, user });
-    if (username !== user.name || password !== user.password) {
-      throw new Error('Incorrect username or password. Please, try again.');
-    }
-    const token = generateAccessToken(username);
+loginRouter.postAsync('/login', async (req, res) => {
+  const { username, password } = req.body;
+  const tokens = await adminService.login(username, password);
+  return res.json({ tokens });
+});
 
-    return res.json({ token });
-  } catch (err) {
-    return next(err);
-  }
+loginRouter.getAsync('/refresh', async (req, res) => {
+  const token = await authorizationService.getAuthToken(req);
+  const tokens = await adminService.refreshToken(token);
+  return res.json({ tokens });
+});
+
+loginRouter.getAsync('/logout', async (req, res) => {
+  const token = await authorizationService.getAuthToken(req);
+  const result = await adminService.logout(token);
+  return res.json(result);
 });
 
 module.exports = {
