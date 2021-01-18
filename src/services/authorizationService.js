@@ -35,6 +35,13 @@ class AuthorizationService {
     });
   }
 
+  // eslint-disable-next-line class-methods-use-this
+  getAuthToken(req) {
+    const header = req.headers.authorization || '';
+    const token = header.split(/\s+/).pop() || '';
+    return token;
+  }
+
   generateAccessToken(data) {
     return this.generateToken(data, config.access_token_key, config.access_token_life);
   }
@@ -54,7 +61,7 @@ class AuthorizationService {
   async generateAllTokens(data) {
     return {
       refreshToken: await this.generateRefreshToken(data),
-      accessToken: await this.generateAccessToken(data),
+      token: await this.generateAccessToken(data),
     };
   }
 }

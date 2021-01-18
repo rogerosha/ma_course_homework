@@ -22,17 +22,45 @@ class AdminService {
     return tokens;
   }
 
-  refreshTokens(refreshToken) {
-    const refrTokens = this.authorizationService.generateRefreshToken({ refreshToken });
-    return refrTokens;
+  async refreshToken(token) {
+    const username = await this.getUsernameFromToken(token);
+
+    const newTokens = await this.authorizationService.generateAllTokens({ username });
+    const dbAdminToken = await this.adminsTable.getAdminRefreshToken(username);
+
+    if (!dbAdminToken) {
+      throw new Error('There is no token for this admin');
+    }
+
+    if (dbAdminToken !== newTokens.refreshToken) {
+      throw new Error('Incorrect username or password');
+    }
+
+    await this.adminsTable.updateAdminRefreshToken({
+      username,
+      refreshToken: newTokens.refreshToken,
+    });
+
+    return newTokens;
   }
 
-  // eslint-disable-next-line consistent-return
-  logout(refreshToken) {
-    const checkOut = this.adminsTable.deleteAdminRefreshToken({ refreshToken });
-    if (checkOut === null) {
-      return { status: true };
+  async logout(token) {
+    const username = await this.getUsernameFromToken(token);
+    const checkOut = await this.adminsTable.deleteAdminRefreshToken({ username });
+    return { status: checkOut === null };
+  }
+
+  /**
+   * @private
+   */
+  async getUsernameFromToken(refreshToken) {
+    const { username } = await this.authorizationService.checkRefreshToken(refreshToken);
+
+    if (!username) {
+      throw new Error('Incorrect token');
     }
+
+    return username;
   }
 }
 
