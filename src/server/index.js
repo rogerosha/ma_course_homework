@@ -2,14 +2,17 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const { addAsync } = require('@awaitjs/express');
 const { config } = require('../config');
-const { router } = require('./routes/router.js');
+const {
+  router,
+  loginRouter,
+  productRouter,
+  colorRouter,
+  typeRouter,
+  orderRouter,
+} = require('./routes');
 const authorizeCheck = require('./middlewares/authorizeCheck');
 const { errorHandler, notFound } = require('./middlewares/errorHandler');
 const db = require('../db');
-const { loginRouter } = require('./routes/loginRouter');
-const { productRouter } = require('./routes/productRouter');
-const { colorRouter } = require('./routes/colorRouter');
-const { typeRouter } = require('./routes/typeRouter');
 
 const app = addAsync(express());
 
@@ -26,6 +29,7 @@ app.use('/', authorizeCheck, router);
 app.use('/products/', authorizeCheck, productRouter);
 app.use('/colors/', authorizeCheck, colorRouter);
 app.use('/types/', authorizeCheck, typeRouter);
+app.use('/orders/', authorizeCheck, orderRouter);
 app.use(notFound);
 app.use(errorHandler);
 

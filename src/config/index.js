@@ -31,6 +31,11 @@ const config = {
       },
     },
   },
+
+  novaPoshta: {
+    apiKey: process.env.NOVA_POSHTA_API_KEY || closeProgram('No NOVA_POSHTA_API_KEY'),
+    warehouse: 'Черкаси',
+  },
 };
 
 module.exports = {
