@@ -31,7 +31,7 @@ class AdminService {
   }
 
   async refreshToken(token) {
-    const username = await this.getUsernameFromToken(token);
+    const username = await this.getUsernameFromToken(token, 'refresh');
 
     const newTokens = await this.authorizationService.generateAllTokens({ username });
     const dbAdminToken = await this.adminsTable.getAdminRefreshToken(username);
@@ -54,8 +54,12 @@ class AdminService {
     return { status };
   }
 
-  async getUsernameFromToken(refreshToken) {
-    const { username } = await this.authorizationService.checkAccessToken(refreshToken);
+  async getUsernameFromToken(refreshToken, checkType = 'access') {
+    const checker =
+      checkType === 'access'
+        ? this.authorizationService.checkAccessToken
+        : this.authorizationService.checkRefreshToken;
+    const { username } = await checker.bind(this.authorizationService)(refreshToken);
 
     if (!username) {
       throw new Error('Incorrect token');
