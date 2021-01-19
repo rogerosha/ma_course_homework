@@ -2,7 +2,7 @@ node_modules/
 .env
 upload/
 optimized/
-# src/utils/task4.txt
 homework/
 .idea/
 .data/
+result.txt
