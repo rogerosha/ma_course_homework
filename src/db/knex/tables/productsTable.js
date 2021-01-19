@@ -105,6 +105,14 @@ class ProductsTable {
     }
   }
 
+  /**
+   * @param {number} id
+   * @returns {number}
+   */
+  getProductQuantity(id) {
+    return +this.knex(this.TABLE_NAME).where({ id }).select('quantity').first();
+  }
+
   async deleteProduct(id) {
     try {
       if (!id) {
@@ -154,6 +162,7 @@ class ProductsTable {
         `${this.colorsTable.TABLE_NAME}.color`,
         `${this.TABLE_NAME}.price`,
         `${this.TABLE_NAME}.quantity`,
+        `${this.TABLE_NAME}.weight`,
         `${this.TABLE_NAME}.created_at`,
         `${this.TABLE_NAME}.updated_at`,
       );
