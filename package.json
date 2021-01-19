@@ -6,7 +6,10 @@
   "scripts": {
     "start": "node ./src/app.js",
     "debug": "nodemon ./src/app.js",
-    "db:hard-reset": "knex migrate:rollback && knex migrate:latest && knex seed:run"  
+    "docker:postgres": "docker-compose exec db bash",
+    "db:hard-reset": "knex migrate:rollback --all && knex migrate:latest && knex seed:run",
+    "db:migration:make": "knex migrate:make",
+    "db:migration:seed": "knex seed:make"
   },
   "repository": {
     "type": "git",
@@ -17,6 +20,7 @@
   "license": "ISC",
   "dependencies": {
     "@awaitjs/express": "^0.6.3",
+    "axios": "^0.21.1",
     "body-parser": "^1.19.0",
     "dotenv": "^8.2.0",
     "event-stream": "^4.0.1",
@@ -24,6 +28,8 @@
     "jsonwebtoken": "^8.5.1",
     "knex": "^0.21.15",
     "nanoid": "^3.1.18",
+    "node-fetch": "^2.6.1",
+    "novaposhta": "^1.1.1",
     "pg": "^8.5.1"
   },
   "devDependencies": {
