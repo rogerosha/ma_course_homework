@@ -1,4 +1,4 @@
-const path = require('path');
+const { Router } = require('@awaitjs/express');
 
 const {
   task1,
@@ -6,112 +6,58 @@ const {
   task3,
   setStore,
   switchStore,
-  uploadCsv,
   getUploadFileList,
   optimizeJson,
 } = require('./controller.js');
+const { notFound } = require('./middlewares/errorHandler.js');
+const { csvUploadFile } = require('./csvUploadFile');
 
-function notFound(res) {
-  res.statusCode = 404;
-  res.end('404 page not found');
-}
+const router = Router();
 
-function makeEndResponse(response) {
-  return (message, statusCode = 200) => {
-    response.statusCode = statusCode;
-    response.end(JSON.stringify(message));
-  };
-}
+router.get('/task1', task1);
+router.get('/task2', task2);
+router.get('/task3', task3);
 
-async function handleStreamRoutes(request, response) {
-  const endResponse = makeEndResponse(response);
-  const { url, method } = request;
-  response.setHeader('Content-Type', 'application/json');
+router.post('/store', setStore);
+router.get('/store/switch', switchStore);
 
-  if (method === 'POST' && url === '/upload/csv') {
-    let fileName = '';
-    try {
-      fileName = await uploadCsv(request);
-    } catch (err) {
-      console.error('Failed to upload CSV', err);
-      endResponse({ status: err.message }, 500);
-      return;
-    }
-    endResponse({ fileName, status: 'everything is okay' });
+router.getAsync('/upload', async (req, res) => {
+  try {
+    const fileList = await getUploadFileList();
+    res.json(fileList);
+  } catch (err) {
+    console.error('Failed to get file list', err);
+    res.status(500).json({ status: 'error' });
+  }
+});
+
+router.postAsync('/upload/csv', async (req, res) => {
+  try {
+    const fileName = await csvUploadFile(req);
+    res.status(201).json({ status: 'your file uploaded', fileName });
+  } catch (err) {
+    console.error('Failed to upload csv', err);
+    res.status(500).json({ status: err.message });
+  }
+});
+
+router.putAsync('/upload/optimize/:fileName', async (req, res) => {
+  const { fileName } = req.params;
+  try {
+    await getUploadFileList();
+  } catch (err) {
+    res.status(500).json({ status: 'error' });
     return;
   }
-  notFound(response);
-}
+  await optimizeJson(fileName).catch((err) => {
+    console.error('Something goes wrong', err);
+    res.status(500).json({ status: 'error' });
+  });
+  res.status(202).json({ status: 'okay' });
+});
 
-async function handleRoutes(request, response) {
-  const { body, url, method, queryParams } = request;
-  const urlPath = path.parse(url);
-  const endResponse = makeEndResponse(response);
-  response.setHeader('Content-Type', 'application/json');
-
-  if (method === 'GET' && url.split('?')[0] === '/task1') {
-    const { property, value } = queryParams;
-    const result = task1(property, +value);
-
-    endResponse(result);
-    return;
-  }
-
-  if (method === 'GET' && url === '/task2') {
-    const result = task2();
-    endResponse(result);
-    return;
-  }
-
-  if (method === 'GET' && url === '/task3') {
-    const result = task3();
-    endResponse(result);
-    return;
-  }
-
-  if (method === 'POST' && url === '/store') {
-    setStore(body);
-    endResponse({ status: 'ok' });
-    return;
-  }
-
-  if (method === 'GET' && url === '/store/switch') {
-    switchStore();
-    endResponse({ status: 'ok' });
-    return;
-  }
-
-  if (method === 'GET' && url === '/upload') {
-    try {
-      const fileList = await getUploadFileList();
-      endResponse(fileList);
-    } catch (err) {
-      console.error('Failed to get file list', err);
-      endResponse({ status: err.message }, 500);
-    }
-    return;
-  }
-
-  if (method === 'POST' && urlPath.dir === '/upload/optimize') {
-    const fileName = urlPath.base;
-    try {
-      await getUploadFileList();
-    } catch (err) {
-      endResponse({ status: err.message }, 500);
-      return;
-    }
-    optimizeJson(fileName).catch((err) => {
-      console.error('Something goes wrong', err);
-      endResponse({ status: err.message }, 500);
-    });
-    endResponse({ status: 'okay' }, 202);
-    return;
-  }
-
-  notFound(response);
-}
+router.use(notFound);
 
 module.exports = {
-  handleRoutes,
-  handleStreamRoutes,
+  router,
 };

@@ -1,4 +1,4 @@
-const { myMap } = require('../discount/myMap');
+const { myMap } = require('../../discount/myMap');
 
 function task3(inputGoods) {
   return myMap(inputGoods, (good) => {

@@ -1,4 +1,3 @@
-require('dotenv').config();
 const server = require('./server');
 
 function enableGracefulExit() {
